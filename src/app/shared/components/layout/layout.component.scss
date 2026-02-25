@@ -1,0 +1,20 @@
+.gold-toolbar {
+  background-color: #D4AF37; /* Tono dorado elegante */
+  color: #1a1a1a; /* Texto oscuro para contrastar */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.brand-title {
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.main-content {
+  padding: 16px;
+  max-width: 600px; /* Al ser pensada para móvil, centramos el contenido en pantallas grandes */
+  margin: 0 auto;
+}

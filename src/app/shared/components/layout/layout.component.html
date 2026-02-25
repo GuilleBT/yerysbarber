@@ -1,0 +1,24 @@
+<mat-toolbar class="gold-toolbar">
+  <span class="brand-title">YerysBarber</span>
+  
+  <span class="spacer"></span>
+
+  @if (!(authService.user$ | async)) {
+    <button mat-button (click)="authService.loginWithGoogle()">
+      <mat-icon>login</mat-icon> Entrar
+    </button>
+  }
+
+  @if (authService.user$ | async; as user) {
+    <span style="font-size: 14px; margin-right: 16px; font-weight: 500;">
+      Hola, {{ (user.displayName || 'Usuario').split(' ')[0] }}
+    </span>
+    <button mat-icon-button (click)="authService.logout()" aria-label="Cerrar sesión">
+      <mat-icon>logout</mat-icon>
+    </button>
+  }
+</mat-toolbar>
+
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>

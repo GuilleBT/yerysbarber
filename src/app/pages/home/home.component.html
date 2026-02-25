@@ -1,0 +1,12 @@
+<div class="calendar-container">
+  <mat-card class="calendar-card">
+    <mat-calendar [(selected)]="selectedDate"></mat-calendar>
+  </mat-card>
+  
+  @if (selectedDate) {
+    <div class="selection-info">
+      <h3>Día seleccionado:</h3>
+      <p>{{ selectedDate | date:'fullDate' }}</p>
+    </div>
+  }
+</div>

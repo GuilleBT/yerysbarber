@@ -1,0 +1,17 @@
+.calendar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding-top: 20px;
+}
+
+.calendar-card {
+  width: 100%;
+  max-width: 350px;
+}
+
+.selection-info {
+  text-align: center;
+  color: #333;
+}

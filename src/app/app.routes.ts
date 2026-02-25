@@ -6,7 +6,11 @@ export const routes: Routes = [
     path: '',
     component: LayoutComponent,
     children: [
-      // Aquí meteremos las vistas de las reservas
+      {
+        path: '',
+        // Aquí aplicamos Lazy Loading para cargar el HomeComponent
+       loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent)
+      }
     ]
   },
   {

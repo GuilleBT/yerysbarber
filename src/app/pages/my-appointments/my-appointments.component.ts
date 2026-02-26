@@ -7,6 +7,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { AppointmentService, Appointment } from '../../shared/services/appointment.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { RouterModule } from '@angular/router';
+import { Router } from 'express';
 
 @Component({
   selector: 'app-my-appointments',
@@ -17,7 +19,8 @@ import { AuthService } from '../../shared/services/auth.service';
     MatIconModule, 
     MatButtonModule, 
     MatProgressSpinnerModule,
-    MatDividerModule
+    MatDividerModule,
+    RouterModule
   ],
   providers: [DatePipe],
   templateUrl: './my-appointments.component.html',
@@ -37,12 +40,14 @@ export class MyAppointmentsComponent implements OnInit {
     if (user) {
       const allAppointments = await this.appointmentService.getUserAppointments(user.uid);
       
-      // 1. Ocultamos las canceladas (desaparecen de la vista)
-      const activeAppointments = allAppointments.filter(a => a.status !== 'cancelled');
+      // 1. Ocultamos las canceladas
+    const activeAppointments = allAppointments.filter(a => a.status !== 'cancelled');
 
-      // 2. Repartimos entre pendientes y completadas/confirmadas
-      this.pendingAppointments = activeAppointments.filter(a => a.status === 'pending');
-      this.completedAppointments = activeAppointments.filter(a => a.status !== 'pending');
+    // 2. PRÓXIMAS CITAS: Metemos las pendientes Y las que Yeray ya ha confirmado
+    this.pendingAppointments = activeAppointments.filter(a => a.status === 'pending' || a.status === 'confirmed');
+
+    // 3. HISTORIAL: Solo las que Yeray ha marcado como terminadas tras el corte
+    this.completedAppointments = activeAppointments.filter(a => a.status === 'completed');
     }
     this.isLoading = false;
   }

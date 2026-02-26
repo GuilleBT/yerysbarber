@@ -26,7 +26,13 @@
             <mat-card-content>
               <div class="appt-header">
                 <span class="appt-date">{{ appt.date | date:'longDate' }}</span>
-                <span class="appt-status pending">Pendiente</span>
+                <span class="appt-status" [ngClass]="appt.status">
+                  @if (appt.status === 'pending') {
+                    Pendiente
+                  } @else if (appt.status === 'confirmed') {
+                    Aceptada
+                  }
+                </span>
               </div>
               
               <mat-divider></mat-divider>

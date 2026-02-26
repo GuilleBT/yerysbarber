@@ -1,0 +1,26 @@
+<div class="profile-container">
+  <mat-card class="profile-card">
+    <mat-card-header>
+      <div mat-card-avatar class="header-image">
+        <mat-icon>account_circle</mat-icon>
+      </div>
+      <mat-card-title>Mi Perfil</mat-card-title>
+      <mat-card-subtitle>Datos de contacto y preferencias</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content class="form-content">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Teléfono móvil</mat-label>
+        <mat-icon matPrefix>phone</mat-icon>
+        <input matInput type="tel" [(ngModel)]="phone" placeholder="Ej: 600123456" maxlength="9">
+        <mat-hint>Obligatorio para avisos urgentes</mat-hint>
+      </mat-form-field>
+    </mat-card-content>
+
+    <mat-card-actions align="end" class="actions">
+      <button mat-raised-button class="btn-gold" (click)="saveProfile()" [disabled]="isSaving">
+        <mat-icon>save</mat-icon> {{ isSaving ? 'Guardando...' : 'Guardar Datos' }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

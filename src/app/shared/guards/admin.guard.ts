@@ -8,7 +8,7 @@ export const adminGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
 
   // AQUÍ PONDRÁS EL CORREO EXACTO DE YERAY MÁS ADELANTE
-  const ADMIN_EMAIL = 'aguillermobeltrantabares@gmail.com'; 
+  const ADMIN_EMAIL = 'guillermobeltrantabares@gmail.com'; 
 
   return authService.user$.pipe(
     take(1),

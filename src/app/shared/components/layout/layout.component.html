@@ -21,6 +21,9 @@
           <span class="user-name">Hola, {{ (user.displayName || 'Usuario').split(' ')[0] }}</span>
         </div>
       }
+<button mat-icon-button class="profile-btn" routerLink="/perfil" title="Mi Perfil">
+        <mat-icon>settings</mat-icon>
+      </button>
 
       <button mat-icon-button class="logout-btn" (click)="authService.logout()" title="Cerrar sesión">
         <mat-icon>logout</mat-icon>

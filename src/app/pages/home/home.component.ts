@@ -19,11 +19,14 @@ import { Router } from '@angular/router';
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent implements OnInit { // <-- IMPLEMENTAMOS OnInit
+export class HomeComponent implements OnInit {
   private appointmentService = inject(AppointmentService);
   public authService = inject(AuthService);
   private datePipe = inject(DatePipe);
   private router = inject(Router);
+
+  // NUEVO: Bloqueo de fechas pasadas
+  minDate: Date = new Date(); // Al crear un 'new Date()', captura automáticamente el día de hoy
 
   selectedDate: Date | null = null;
   selectedSlot: string | null = null;
@@ -67,19 +70,45 @@ export class HomeComponent implements OnInit { // <-- IMPLEMENTAMOS OnInit
       this.occupiedSlots = await this.appointmentService.getOccupiedSlots(formattedDate);
     }
   }
+// NUEVO: El portero que decide si un botón se bloquea o no
+  isSlotDisabled(slot: string): boolean {
+    // 1. Si la hora ya la ha reservado otra persona, la bloqueamos
+    if (this.occupiedSlots.includes(slot)) return true;
 
+    // 2. Comprobamos si el usuario ha pinchado en el día de HOY
+    if (this.selectedDate) {
+      const today = new Date();
+      const isToday = 
+        this.selectedDate.getDate() === today.getDate() &&
+        this.selectedDate.getMonth() === today.getMonth() &&
+        this.selectedDate.getFullYear() === today.getFullYear();
+
+      // Si es hoy, miramos el reloj
+      if (isToday) {
+        // Partimos el texto "16:30" en dos números: 16 y 30
+        const [slotHour, slotMinute] = slot.split(':').map(Number);
+        const currentHour = today.getHours();
+        const currentMinute = today.getMinutes();
+
+        // Si la hora de la cita ya pasó, o si estamos en la misma hora pero ya pasaron los minutos... ¡bloqueado!
+        if (slotHour < currentHour || (slotHour === currentHour && slotMinute <= currentMinute)) {
+          return true;
+        }
+      }
+    }
+
+    // Si sobrevive a todos los filtros, la hora está libre
+    return false;
+  }
   selectSlot(slot: string) {
-    if (!this.occupiedSlots.includes(slot)) {
+    // CAMBIAMOS ESTA LÍNEA para que use la misma regla
+    if (!this.isSlotDisabled(slot)) { 
       this.selectedSlot = slot;
 
-      // Magia de UX: Esperamos 100ms a que Angular pinte el botón y hacemos scroll suave
       setTimeout(() => {
         const confirmDiv = document.getElementById('confirm-zone');
         if (confirmDiv) {
-          confirmDiv.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' // Lo deja centrado en la pantalla del móvil
-          });
+          confirmDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, 100);
     }

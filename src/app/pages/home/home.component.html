@@ -1,6 +1,10 @@
 <div class="calendar-container">
   <mat-card class="calendar-card">
-    <mat-calendar [selected]="selectedDate" (selectedChange)="onDateSelected($event)" [dateFilter]="myDateFilter"></mat-calendar>
+    <mat-calendar 
+      [selected]="selectedDate" 
+      (selectedChange)="onDateSelected($event)" 
+      [dateFilter]="myDateFilter"
+      [minDate]="minDate"> </mat-calendar>
   </mat-card>
   
   @if (selectedDate) {
@@ -14,7 +18,7 @@
           <button 
             mat-stroked-button 
             [color]="selectedSlot === slot ? 'accent' : ''"
-            [disabled]="occupiedSlots.includes(slot)"
+            [disabled]="isSlotDisabled(slot)"
             (click)="selectSlot(slot)">
             {{ slot }}
           </button>

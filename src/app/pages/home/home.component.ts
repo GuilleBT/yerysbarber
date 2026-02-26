@@ -76,7 +76,6 @@ export class HomeComponent implements OnInit { // <-- IMPLEMENTAMOS OnInit
   }
 
 async confirmAppointment() { 
-    // 1. Validación de seguridad: Asegurarnos de que eligió día y hora
     if (!this.selectedDate || !this.selectedSlot) {
       alert('Por favor, selecciona un día y una hora primero.');
       return;
@@ -85,22 +84,35 @@ async confirmAppointment() {
     const user = this.authService.getCurrentUser();
     if (!user) return;
 
-    // --- PUNTO DE CONTROL: VERIFICAR TELÉFONO ---
+    // --- PUNTO DE CONTROL 1: VERIFICAR TELÉFONO ---
     const profile = await this.authService.getUserProfile(user.uid);
     if (!profile || !profile['phone']) {
       alert('¡Espera! Yeray necesita tu número de teléfono por si ocurre algún imprevisto. Por favor, añádelo antes de pedir cita.');
       this.router.navigate(['/perfil']); 
       return; 
     }
-    // --------------------------------------------------
+
+    // --- PUNTO DE CONTROL 2: LÍMITE ANTI-SPAM (Máx 3 citas) ---
+    // 1. Nos traemos todo el historial de este usuario
+    const userHistory = await this.appointmentService.getUserAppointments(user.uid);
+    // 2. Filtramos solo las que están "vivas" (pendientes o ya aceptadas por Yeray)
+    const activeAppointments = userHistory.filter(
+      appt => appt.status === 'pending' || appt.status === 'confirmed'
+    );
+    // 3. Si tiene 3 o más... ¡hachazo!
+    if (activeAppointments.length >= 3) {
+      alert('Por seguridad, solo puedes tener un máximo de 3 citas activas a la vez. Podrás pedir otra cuando Yeray complete o gestione tus reservas actuales.');
+      return; // Cortamos la ejecución, la cita no se guarda
+    }
+    // ----------------------------------------------------------
 
     const formattedDate = this.datePipe.transform(this.selectedDate, 'yyyy-MM-dd') || '';
 
     const newAppointment: Appointment = {
-      clientId: user.uid, // <-- CORREGIDO: Usamos "user", no "currentUser"
-      clientName: user.displayName || 'Cliente', // <-- CORREGIDO
+      clientId: user.uid, 
+      clientName: user.displayName || 'Cliente', 
       date: formattedDate,
-      time: this.selectedSlot, // Ahora TypeScript sabe que esto no es null
+      time: this.selectedSlot, 
       status: 'pending',
       notes: '', 
       createdAt: Date.now()
@@ -110,7 +122,6 @@ async confirmAppointment() {
       await this.appointmentService.createAppointment(newAppointment);
       alert('¡Cita confirmada con éxito!');
       
-      // Reseteamos la vista
       this.selectedDate = null;
       this.selectedSlot = null;
     } catch (error) {

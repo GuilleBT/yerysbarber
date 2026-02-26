@@ -7,6 +7,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { AppointmentService, Appointment } from '../../shared/services/appointment.service';
+import { AuthService } from '../../shared/services/auth.service'; // <-- IMPORT VITAL DEL SERVICIO
 
 @Component({
   selector: 'app-admin',
@@ -22,15 +23,20 @@ import { AppointmentService, Appointment } from '../../shared/services/appointme
 export class AdminComponent implements OnInit {
   private appointmentService = inject(AppointmentService);
   private datePipe = inject(DatePipe);
+  private authService = inject(AuthService); // <-- INYECCIÓN CORRECTA
 
   totalCuts: number = 0;
   selectedDate: Date = new Date();
   dailyAppointments: Appointment[] = [];
-  pendingRequests: Appointment[] = []; // <-- NUEVA BANDEJA DE ENTRADA
+  pendingRequests: Appointment[] = []; 
 
   async ngOnInit() {
     this.totalCuts = await this.appointmentService.getTotalCompletedCuts();
-    this.pendingRequests = await this.appointmentService.getAllPendingAppointments(); // Cargamos todas
+    this.pendingRequests = await this.appointmentService.getAllPendingAppointments(); 
+    
+    // Buscamos teléfonos de las pendientes
+    await this.loadPhoneNumbers(this.pendingRequests);
+    
     await this.onDateSelected(this.selectedDate);
   }
 
@@ -40,10 +46,29 @@ export class AdminComponent implements OnInit {
     const dateString = this.datePipe.transform(date, 'yyyy-MM-dd') || '';
     const agenda = await this.appointmentService.getDailyAgenda(dateString);
     
-    // En la agenda diaria solo mostramos las confirmadas o completadas, ya que las pendientes están arriba
     this.dailyAppointments = agenda.filter(a => a.status === 'confirmed' || a.status === 'completed');
+    
+    // Buscamos teléfonos de las citas del día
+    await this.loadPhoneNumbers(this.dailyAppointments);
   }
 
+  // Carga los teléfonos desde la base de datos de perfiles
+  async loadPhoneNumbers(appointments: Appointment[]) {
+    for (let appt of appointments) {
+      try {
+        const profile = await this.authService.getUserProfile(appt.clientId);
+        if (profile && profile['phone']) {
+          appt.clientPhone = profile['phone'];
+        } else {
+          appt.clientPhone = 'Sin teléfono';
+        }
+      } catch (error) {
+        appt.clientPhone = 'Sin teléfono';
+      }
+    }
+  }
+
+  // Gestiona el ciclo de vida de la cita
   async changeStatus(id: string | undefined, newStatus: 'confirmed' | 'cancelled' | 'completed') {
     if (!id) return;
     
@@ -58,7 +83,6 @@ export class AdminComponent implements OnInit {
     try {
       await this.appointmentService.updateAppointmentStatus(id, newStatus);
       
-      // 1. Lo quitamos de la bandeja de entrada si estaba ahí
       const pendingIndex = this.pendingRequests.findIndex(a => a.id === id);
       let processedAppt: Appointment | null = null;
       
@@ -67,7 +91,6 @@ export class AdminComponent implements OnInit {
         this.pendingRequests.splice(pendingIndex, 1);
       }
 
-      // 2. Actualizamos la agenda diaria
       const dailyIndex = this.dailyAppointments.findIndex(a => a.id === id);
       if (dailyIndex !== -1) {
         if (newStatus === 'cancelled') {
@@ -76,12 +99,11 @@ export class AdminComponent implements OnInit {
           this.dailyAppointments[dailyIndex].status = newStatus;
         }
       } else if (newStatus === 'confirmed' && processedAppt) {
-        // Si la acaba de aceptar desde la bandeja, comprobamos si pertenece al día seleccionado para pintarla
         const selectedDateString = this.datePipe.transform(this.selectedDate, 'yyyy-MM-dd');
         if (processedAppt.date === selectedDateString) {
           processedAppt.status = 'confirmed';
           this.dailyAppointments.push(processedAppt);
-          this.dailyAppointments.sort((a, b) => a.time.localeCompare(b.time)); // Reordenar por hora
+          this.dailyAppointments.sort((a, b) => a.time.localeCompare(b.time)); 
         }
       }
 

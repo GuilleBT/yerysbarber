@@ -18,7 +18,7 @@ export class LayoutComponent {
   private router = inject(Router);
 
   // ¡OJO! Tiene que ser PUBLIC para que el HTML pueda leerla correctamente
-  public ADMIN_EMAIL = 'guillermobeltrantabares@gmail.com'; 
+  public ADMIN_EMAIL = 'aguillermobeltrantabares@gmail.com'; 
 
   async login() {
     await this.authService.loginWithGoogle();

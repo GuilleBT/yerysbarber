@@ -1,6 +1,6 @@
 <div class="calendar-container">
   <mat-card class="calendar-card">
-    <mat-calendar [selected]="selectedDate" (selectedChange)="onDateSelected($event)"></mat-calendar>
+    <mat-calendar [selected]="selectedDate" (selectedChange)="onDateSelected($event)" [dateFilter]="myDateFilter"></mat-calendar>
   </mat-card>
   
   @if (selectedDate) {

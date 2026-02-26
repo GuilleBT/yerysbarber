@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Firestore, collection, addDoc, query, where, getDocs, doc, updateDoc } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, query, where, getDocs, doc, updateDoc, getDoc, setDoc } from '@angular/fire/firestore';
 
 export interface Appointment {
   id?: string; // ID opcional, se asignará automáticamente al guardar en Firestore
@@ -10,6 +10,7 @@ export interface Appointment {
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   notes: string;
   createdAt: number;
+  clientPhone?: string;
 }
 
 @Injectable({
@@ -151,6 +152,34 @@ export class AppointmentService {
     } catch (error) {
       console.error('Error al obtener pendientes:', error);
       return [];
+    }
+  }
+  // ADMIN AJUSTES: Cargar la configuración de la barbería
+  async getBarbershopSettings(): Promise<any> {
+    try {
+      const docRef = doc(this.firestore, 'settings/general');
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) return docSnap.data();
+      
+      // Si es la primera vez que entra, le damos estos valores por defecto
+      return {
+        blockedDates: [],
+        availableSlots: '10:00, 10:30, 11:00, 11:30, 12:00, 12:30, 13:00, 13:30, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00, 19:30'
+      };
+    } catch (error) {
+      console.error('Error al cargar ajustes:', error);
+      return null;
+    }
+  }
+
+  // ADMIN AJUSTES: Guardar configuración
+  async saveBarbershopSettings(settings: any): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'settings/general');
+      await setDoc(docRef, settings, { merge: true });
+    } catch (error) {
+      console.error('Error al guardar ajustes:', error);
+      throw error;
     }
   }
 }

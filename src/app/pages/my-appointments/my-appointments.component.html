@@ -1,0 +1,82 @@
+<div class="appointments-container">
+  <h2 class="page-title">Mi Historial</h2>
+
+  @if (isLoading) {
+    <div class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Cargando tus citas...</p>
+    </div>
+  } 
+  @else if (pendingAppointments.length === 0 && completedAppointments.length === 0) {
+    <div class="empty-state">
+      <mat-icon class="empty-icon">event_busy</mat-icon>
+      <p>Aún no tienes ninguna cita registrada.</p>
+      <button mat-raised-button class="btn-gold" routerLink="/reservar">
+        Pedir mi primera cita
+      </button>
+    </div>
+  } 
+  @else {
+    
+    @if (pendingAppointments.length > 0) {
+      <h3 class="section-title">Próximas citas</h3>
+      <div class="appointment-list">
+        @for (appt of pendingAppointments; track appt.id) {
+          <mat-card class="appointment-card">
+            <mat-card-content>
+              <div class="appt-header">
+                <span class="appt-date">{{ appt.date | date:'longDate' }}</span>
+                <span class="appt-status pending">Pendiente</span>
+              </div>
+              
+              <mat-divider></mat-divider>
+
+              <div class="appt-body">
+                <div class="appt-detail">
+                  <mat-icon>schedule</mat-icon>
+                  <span>{{ appt.time }} - {{ getEndTime(appt.time) }} h</span>
+                </div>
+                <div class="appt-detail">
+                  <mat-icon>content_cut</mat-icon>
+                  <span>YerysBarber</span>
+                </div>
+              </div>
+
+              <mat-divider style="margin-top: 16px; margin-bottom: 8px;"></mat-divider>
+              <div style="display: flex; justify-content: flex-end;">
+                <button mat-button color="warn" (click)="cancelAppointment(appt.id)">
+                  <mat-icon>cancel</mat-icon> Anular cita
+                </button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    }
+
+    @if (completedAppointments.length > 0) {
+      <h3 class="section-title" style="margin-top: 40px;">Historial pasado</h3>
+      <div class="appointment-list">
+        @for (appt of completedAppointments; track appt.id) {
+          <mat-card class="appointment-card past-card">
+            <mat-card-content>
+              <div class="appt-header">
+                <span class="appt-date">{{ appt.date | date:'longDate' }}</span>
+                <span class="appt-status confirmed">Completada</span>
+              </div>
+              
+              <mat-divider></mat-divider>
+
+              <div class="appt-body">
+                <div class="appt-detail">
+                  <mat-icon>schedule</mat-icon>
+                  <span>{{ appt.time }} - {{ getEndTime(appt.time) }} h</span>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    }
+  }
+</div>

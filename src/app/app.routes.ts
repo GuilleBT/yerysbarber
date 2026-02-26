@@ -5,7 +5,7 @@ export const routes: Routes = [
   {
     path: '',
     component: LayoutComponent,
-    children: [
+   children: [
       {
         path: '', 
         loadComponent: () => import('./pages/welcome/welcome.component').then(m => m.WelcomeComponent)
@@ -13,6 +13,16 @@ export const routes: Routes = [
       {
         path: 'reservar', 
         loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent),
+        canActivate: [authGuard]
+      },
+      {
+        path: 'mis-citas', 
+        loadComponent: () => import('./pages/my-appointments/my-appointments.component').then(m => m.MyAppointmentsComponent),
+        canActivate: [authGuard] 
+      },
+      {
+        path: 'admin', 
+        loadComponent: () => import('./pages/admin/admin.component').then(m => m.AdminComponent),
         canActivate: [authGuard]
       }
     ]

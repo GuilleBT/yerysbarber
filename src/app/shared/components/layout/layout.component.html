@@ -9,7 +9,11 @@
     </button>
   }
 
-  @if (authService.user$ | async; as user) {
+ @if (authService.user$ | async; as user) {
+    <button mat-button routerLink="/admin" class="admin-btn">
+      <mat-icon>admin_panel_settings</mat-icon> Panel
+    </button>
+
     <span style="font-size: 14px; margin-right: 16px; font-weight: 500;">
       Hola, {{ (user.displayName || 'Usuario').split(' ')[0] }}
     </span>

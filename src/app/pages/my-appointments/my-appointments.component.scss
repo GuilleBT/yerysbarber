@@ -1,0 +1,123 @@
+.appointments-container {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.page-title {
+  text-align: center;
+  color: #1a1a1a;
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+
+/* Estados de carga y vacío */
+.loading-state, .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 40px;
+  text-align: center;
+  color: #666;
+
+  .empty-icon {
+    font-size: 60px;
+    height: 60px;
+    width: 60px;
+    color: #ccc;
+    margin-bottom: 16px;
+  }
+
+  .btn-gold {
+    margin-top: 16px;
+    background-color: #D4AF37 !important;
+    color: #1a1a1a !important;
+  }
+}
+
+/* Tarjetas de citas */
+.appointment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.appointment-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;
+}
+
+.appt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+
+  .appt-date {
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+    text-transform: capitalize;
+  }
+
+  .appt-status {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    
+    &.pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    &.confirmed {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    &.cancelled {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  }
+}
+
+.appt-body {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+
+  .appt-detail {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #555;
+    font-size: 15px;
+
+    mat-icon {
+      color: #D4AF37;
+      font-size: 20px;
+      height: 20px;
+      width: 20px;
+    }
+  }
+}
+
+.section-title {
+  font-size: 18px;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+  font-weight: 600;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 8px;
+}
+
+.past-card {
+  opacity: 0.65;
+  background-color: #fcfcfc;
+  
+  // Le quitamos la sombra para que parezca inactiva
+  box-shadow: none !important;
+  border: 1px solid #eee;
+}

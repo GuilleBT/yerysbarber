@@ -1,4 +1,5 @@
 <div class="admin-container">
+  
   <mat-card class="stats-card">
     <mat-card-content class="stats-content">
       <mat-icon class="stats-icon">content_cut</mat-icon>
@@ -8,40 +9,91 @@
       </div>
     </mat-card-content>
   </mat-card>
-
-  <h2 class="section-title">Agenda de Hoy</h2>
-
-  @if (todaysAppointments.length === 0) {
-    <div class="empty-state">
-      <mat-icon>coffee</mat-icon>
-      <p>No hay citas programadas para hoy. ¡Día libre!</p>
-    </div>
-  } @else {
-    <div class="agenda-list">
-      @for (appt of todaysAppointments; track appt.id) {
-        <mat-card class="agenda-card" [class.is-completed]="appt.status === 'completed'">
+@if (pendingRequests.length > 0) {
+    <h2 class="section-title" style="color: #D4AF37; display: flex; align-items: center; gap: 8px;">
+      <mat-icon>notifications_active</mat-icon> Peticiones por revisar ({{ pendingRequests.length }})
+    </h2>
+    <div class="pending-list" style="margin-bottom: 40px; display: flex; flex-direction: column; gap: 12px;">
+      @for (appt of pendingRequests; track appt.id) {
+        <mat-card class="agenda-card" style="border-left-color: #ffc107;">
           <mat-card-content>
             <div class="agenda-header">
-              <span class="time">{{ appt.time }} h</span>
+              <span class="time">{{ appt.date | date:'shortDate' }} - {{ appt.time }} h</span>
               <span class="client-name">{{ appt.clientName }}</span>
             </div>
             
             <mat-divider style="margin: 12px 0;"></mat-divider>
 
             <div class="agenda-actions">
-              <span class="status-badge" [ngClass]="appt.status">
-                {{ appt.status === 'pending' ? 'Pendiente' : 'Completado' }}
-              </span>
-
-              @if (appt.status === 'pending') {
-                <button mat-raised-button class="btn-gold" (click)="completeAppointment(appt.id)">
-                  <mat-icon>check_circle</mat-icon> Terminar
+              <span class="status-badge pending">Nueva Petición</span>
+              <div class="action-buttons">
+                <button mat-icon-button color="primary" (click)="changeStatus(appt.id, 'confirmed')" title="Aceptar Cita">
+                  <mat-icon>check_circle</mat-icon>
                 </button>
-              }
+                <button mat-icon-button color="warn" (click)="changeStatus(appt.id, 'cancelled')" title="Rechazar Cita">
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              </div>
             </div>
           </mat-card-content>
         </mat-card>
       }
     </div>
   }
+  <div class="dashboard-grid">
+    <div class="calendar-section">
+      <mat-card class="calendar-card">
+        <mat-calendar [selected]="selectedDate" (selectedChange)="onDateSelected($event)"></mat-calendar>
+      </mat-card>
+    </div>
+
+    <div class="agenda-section">
+      <h2 class="section-title">Agenda: {{ selectedDate | date:'longDate' }}</h2>
+
+      @if (dailyAppointments.length === 0) {
+        <div class="empty-state">
+          <mat-icon>coffee</mat-icon>
+          <p>No hay citas para este día.</p>
+        </div>
+      } @else {
+        <div class="agenda-list">
+          @for (appt of dailyAppointments; track appt.id) {
+            <mat-card class="agenda-card" [class.is-completed]="appt.status === 'completed'">
+              <mat-card-content>
+                <div class="agenda-header">
+                  <span class="time">{{ appt.time }} h</span>
+                  <span class="client-name">{{ appt.clientName }}</span>
+                </div>
+                
+                <mat-divider style="margin: 12px 0;"></mat-divider>
+
+                <div class="agenda-actions">
+                  <span class="status-badge" [ngClass]="appt.status">
+                    {{ appt.status === 'pending' ? 'Pendiente' : (appt.status === 'confirmed' ? 'Confirmado' : 'Completado') }}
+                  </span>
+
+                  <div class="action-buttons">
+                    @if (appt.status === 'pending') {
+                      <button mat-icon-button color="primary" (click)="changeStatus(appt.id, 'confirmed')" title="Aceptar Cita">
+                        <mat-icon>check_circle</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" (click)="changeStatus(appt.id, 'cancelled')" title="Rechazar Cita">
+                        <mat-icon>cancel</mat-icon>
+                      </button>
+                    }
+                    
+                    @if (appt.status === 'confirmed') {
+                      <button mat-raised-button class="btn-gold" (click)="changeStatus(appt.id, 'completed')">
+                        <mat-icon>done_all</mat-icon> Terminar Corte
+                      </button>
+                    }
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+      }
+    </div>
+  </div>
 </div>

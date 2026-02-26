@@ -90,3 +90,15 @@
   }
 }
 
+.dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+.calendar-section { flex: 1; }
+.agenda-section { flex: 2; }

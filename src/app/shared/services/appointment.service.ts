@@ -124,4 +124,33 @@ export class AppointmentService {
       throw error;
     }
   }
+// ADMIN: Cambia el estado de una cita al valor que le pasemos
+  async updateAppointmentStatus(appointmentId: string, newStatus: 'confirmed' | 'cancelled' | 'completed'): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'appointments', appointmentId);
+      await updateDoc(docRef, { status: newStatus });
+    } catch (error) {
+      console.error('Error al cambiar el estado:', error);
+      throw error;
+    }
+  }
+  // ADMIN: Obtiene TODAS las peticiones pendientes globales
+  async getAllPendingAppointments(): Promise<Appointment[]> {
+    try {
+      const appointmentsRef = collection(this.firestore, 'appointments');
+      const q = query(appointmentsRef, where('status', '==', 'pending'));
+      const querySnapshot = await getDocs(q);
+      
+      const appointments = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Appointment));
+
+      // Las ordenamos por fecha para que vea primero las más urgentes
+      return appointments.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+    } catch (error) {
+      console.error('Error al obtener pendientes:', error);
+      return [];
+    }
+  }
 }

@@ -1,0 +1,58 @@
+.welcome-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  text-align: center;
+  padding: 20px;
+}
+
+.branding {
+  margin-bottom: 40px;
+  
+  .huge-icon {
+    font-size: 80px;
+    height: 80px;
+    width: 80px;
+    color: #D4AF37;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    color: #1a1a1a;
+  }
+
+  p {
+    font-size: 18px;
+    color: #666;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 300px;
+
+  button {
+    height: 54px;
+    font-size: 16px;
+    border-radius: 8px;
+  }
+
+  .btn-gold {
+    background-color: #D4AF37 !important;
+    color: #1a1a1a !important;
+    font-weight: 600;
+  }
+
+  .btn-outline {
+    border-color: #D4AF37 !important;
+    color: #D4AF37 !important;
+  }
+}

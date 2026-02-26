@@ -1,12 +1,33 @@
 <div class="calendar-container">
   <mat-card class="calendar-card">
-    <mat-calendar [(selected)]="selectedDate"></mat-calendar>
+    <mat-calendar [selected]="selectedDate" (selectedChange)="onDateSelected($event)"></mat-calendar>
   </mat-card>
   
   @if (selectedDate) {
-    <div class="selection-info">
-      <h3>Día seleccionado:</h3>
-      <p>{{ selectedDate | date:'fullDate' }}</p>
+    <div class="slots-container">
+      <div class="selection-info">
+        <h3>Día: {{ selectedDate | date:'fullDate' }}</h3>
+      </div>
+
+      <div class="slots-grid">
+       @for (slot of availableSlots; track slot) {
+          <button 
+            mat-stroked-button 
+            [color]="selectedSlot === slot ? 'accent' : ''"
+            [disabled]="occupiedSlots.includes(slot)"
+            (click)="selectSlot(slot)">
+            {{ slot }}
+          </button>
+        }
+      </div>
+
+      @if (selectedSlot) {
+        <div class="confirm-section">
+          <button mat-raised-button class="btn-confirm" (click)="confirmAppointment()">
+            Confirmar cita: {{ selectedSlot }}
+          </button>
+        </div>
+      }
     </div>
   }
 </div>

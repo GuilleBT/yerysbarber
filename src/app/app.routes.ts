@@ -7,9 +7,12 @@ export const routes: Routes = [
     component: LayoutComponent,
     children: [
       {
-        path: '',
-        // Aquí aplicamos Lazy Loading para cargar el HomeComponent
-       loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent)
+        path: '', // La ruta por defecto ahora es la bienvenida
+        loadComponent: () => import('./pages/welcome/welcome.component').then(m => m.WelcomeComponent)
+      },
+      {
+        path: 'reservar', // Movemos tu calendario aquí
+        loadComponent: () => import('./pages/home/home.component').then(m => m.HomeComponent)
       }
     ]
   },

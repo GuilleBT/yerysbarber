@@ -23,4 +23,8 @@ export class AuthService {
   async logout() {
     await signOut(this.auth);
   }
+
+  getCurrentUser() {
+    return this.auth.currentUser;
+  }
 }

@@ -69,9 +69,19 @@ export class HomeComponent implements OnInit { // <-- IMPLEMENTAMOS OnInit
   }
 
   selectSlot(slot: string) {
-    // Pequeña validación extra de seguridad
     if (!this.occupiedSlots.includes(slot)) {
       this.selectedSlot = slot;
+
+      // Magia de UX: Esperamos 100ms a que Angular pinte el botón y hacemos scroll suave
+      setTimeout(() => {
+        const confirmDiv = document.getElementById('confirm-zone');
+        if (confirmDiv) {
+          confirmDiv.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' // Lo deja centrado en la pantalla del móvil
+          });
+        }
+      }, 100);
     }
   }
 

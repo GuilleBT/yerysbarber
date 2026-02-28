@@ -29,8 +29,6 @@ export class ProfileComponent implements OnInit {
   private appointmentService = inject(AppointmentService);
   private datePipe = inject(DatePipe);
 
-  private ADMIN_EMAIL = 'guillermobeltrantabares@gmail.com'; // PON TU CORREO DE PRUEBAS AQUÍ
-
   isAdmin: boolean = false;
   uid: string = '';
   isSaving: boolean = false;
@@ -54,7 +52,8 @@ export class ProfileComponent implements OnInit {
     const user = this.authService.getCurrentUser();
     if (user) {
       this.uid = user.uid;
-      this.isAdmin = (user.email === this.ADMIN_EMAIL);
+      // Usamos el correo centralizado del servicio
+      this.isAdmin = (user.email === this.authService.ADMIN_EMAIL);
 
       if (this.isAdmin) {
         const settings = await this.appointmentService.getBarbershopSettings();

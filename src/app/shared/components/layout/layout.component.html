@@ -9,7 +9,7 @@
   <div class="user-zone">
     @if (authService.user$ | async; as user) {
       
-      @if (user.email === ADMIN_EMAIL) {
+      @if (user.email === authService.ADMIN_EMAIL) {
         <div class="admin-badge">
           <mat-icon>shield</mat-icon>
           <span>ADMIN</span>

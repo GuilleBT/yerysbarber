@@ -1,3 +1,4 @@
+@use "sass:color";
 // Importar tipografías elegantes
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;500&display=swap');
 
@@ -197,7 +198,7 @@ $shadow-elegant: 0 20px 40px rgba(0, 0, 0, 0.03);
   }
 
   .btn-gold {
-    background: linear-gradient(135deg, $primary-gold, darken($primary-gold, 5%)) !important;
+    background: linear-gradient(135deg, $primary-gold, color.adjust($primary-gold, $lightness: -5%));
     color: $white !important;
     border: none !important;
     box-shadow: 0 10px 25px rgba($primary-gold, 0.25);

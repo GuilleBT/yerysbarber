@@ -15,14 +15,11 @@ export class WelcomeComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
 
-  // PON AQUÍ EL CORREO REAL DE YERAY
-  private ADMIN_EMAIL = ' guillermobeltrantabares@gmail.com'; 
-
-  ngOnInit() {
+ ngOnInit() {
     // Escuchamos el estado del usuario en tiempo real
     this.authService.user$.subscribe(user => {
       // Si hay un usuario logueado y es el jefe...
-      if (user && user.email === this.ADMIN_EMAIL) {
+      if (user && user.email === this.authService.ADMIN_EMAIL) {
         // ¡Zasca! Teletransporte al panel de control
         this.router.navigate(['/admin']);
       }

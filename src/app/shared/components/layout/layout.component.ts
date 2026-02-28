@@ -16,16 +16,14 @@ import { AuthService } from '../../services/auth.service';
 export class LayoutComponent implements OnInit {
   public authService = inject(AuthService);
   private router = inject(Router);
-
-  public ADMIN_EMAIL = 'guillermobeltrantabares@gmail.com'; 
   
   // NUEVO: Variable para que el HTML sepa si es el jefe
   public isAdmin = false; 
 
-  ngOnInit() {
+ ngOnInit() {
     // Escuchamos en tiempo real si el que navega es el admin
     this.authService.user$.subscribe(user => {
-      this.isAdmin = (user && user.email === this.ADMIN_EMAIL) || false;
+      this.isAdmin = (user && user.email === this.authService.ADMIN_EMAIL) || false;
     });
   }
 
@@ -35,7 +33,7 @@ export class LayoutComponent implements OnInit {
     // Inmediatamente después de loguearse, comprobamos su identidad
     const user = this.authService.getCurrentUser();
     
-    if (user && user.email === this.ADMIN_EMAIL) {
+    if (user && user.email === this.authService.ADMIN_EMAIL) {
       this.router.navigate(['/admin']); // Vuelo directo al panel del jefe
     } else {
       this.router.navigate(['/']); // Los mortales van a la portada

@@ -7,14 +7,11 @@ export const adminGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // AQUÍ PONDRÁS EL CORREO EXACTO DE YERAY MÁS ADELANTE
-  const ADMIN_EMAIL = 'guillermobeltrantabares@gmail.com'; 
-
-  return authService.user$.pipe(
+return authService.user$.pipe(
     take(1),
     map(user => {
-      // Comprobamos si hay usuario y si su correo coincide con el del jefe
-      if (user && user.email === ADMIN_EMAIL) {
+      // Comprobamos si hay usuario y si su correo coincide con el del jefe (desde el servicio)
+      if (user && user.email === authService.ADMIN_EMAIL) {
         return true; // Le abrimos la puerta al panel
       } else {
         alert('Acceso denegado. Área exclusiva para el administrador.');

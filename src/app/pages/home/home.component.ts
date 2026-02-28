@@ -22,8 +22,7 @@ export class HomeComponent implements OnInit {
   private datePipe = inject(DatePipe);
   private router = inject(Router);
 
-  private ADMIN_EMAIL = 'guillermobeltrantabares@gmail.com';
-
+ 
   minDate: Date = new Date();
   selectedDate: Date | null = null;
   selectedSlot: string | null = null;
@@ -37,10 +36,11 @@ export class HomeComponent implements OnInit {
   blockedSlotsAdmin: any = {}; 
 
   // UN SOLO ngOnInit QUE HACE LAS DOS COSAS
-  async ngOnInit() {
+ async ngOnInit() {
     // 1. El Trampolín: Vigilamos en tiempo real quién entra
     this.authService.user$.subscribe(user => {
-      if (user && user.email === this.ADMIN_EMAIL) {
+      // Usamos el correo centralizado del servicio
+      if (user && user.email === this.authService.ADMIN_EMAIL) {
         this.router.navigate(['/admin']); 
       }
     });

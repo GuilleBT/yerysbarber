@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core'; // <-- AÑADE OnInit AQUÍ
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -11,10 +11,7 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [
-    CommonModule, MatCardModule, MatDatepickerModule, 
-    MatNativeDateModule, MatButtonModule
-  ],
+  imports: [CommonModule, MatCardModule, MatDatepickerModule, MatNativeDateModule, MatButtonModule],
   providers: [DatePipe],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
@@ -25,57 +22,77 @@ export class HomeComponent implements OnInit {
   private datePipe = inject(DatePipe);
   private router = inject(Router);
 
-  // NUEVO: Bloqueo de fechas pasadas
-  minDate: Date = new Date(); // Al crear un 'new Date()', captura automáticamente el día de hoy
+  private ADMIN_EMAIL = 'guillermobeltrantabares@gmail.com';
 
+  minDate: Date = new Date();
   selectedDate: Date | null = null;
   selectedSlot: string | null = null;
-  occupiedSlots: string[] = []; 
   
-  // NUEVAS VARIABLES PARA LOS AJUSTES
+  occupiedSlots: string[] = []; 
+  availableSlots: string[] = []; 
+  
+  // Variables del "Cerebro" de Yeray
   blockedDates: string[] = []; 
-  availableSlots: string[] = []; // Ahora empieza vacío y se llena desde Firebase
+  weeklySchedule: any = {}; 
+  blockedSlotsAdmin: any = {}; 
 
+  // UN SOLO ngOnInit QUE HACE LAS DOS COSAS
   async ngOnInit() {
-    // 1. Cargamos la configuración del jefe nada más abrir la página
+    // 1. El Trampolín: Vigilamos en tiempo real quién entra
+    this.authService.user$.subscribe(user => {
+      if (user && user.email === this.ADMIN_EMAIL) {
+        this.router.navigate(['/admin']); 
+      }
+    });
+
+    // 2. Cargamos los ajustes del calendario
     const settings = await this.appointmentService.getBarbershopSettings();
     if (settings) {
-      // 2. Convertimos el texto "10:00, 10:30" en una lista real y quitamos espacios extra
-      if (settings.availableSlots) {
-        this.availableSlots = settings.availableSlots.split(',').map((s: string) => s.trim());
-      }
-      // 3. Guardamos los días de vacaciones
       this.blockedDates = settings.blockedDates || [];
+      this.weeklySchedule = settings.weeklySchedule || {};
+      this.blockedSlotsAdmin = settings.blockedSlots || {};
     }
   }
 
-  // NUEVO MÉTODO: Filtro mágico para bloquear los días en el calendario visual
+  // EL FILTRO MÁGICO DEL CALENDARIO
   myDateFilter = (d: Date | null): boolean => {
     if (!d) return false;
-    const dateString = this.datePipe.transform(d, 'yyyy-MM-dd');
-    // Si el día ESTÁ en la lista de vacaciones, devuelve false (lo bloquea en gris)
-    return !this.blockedDates.includes(dateString || '');
+    const dateString = this.datePipe.transform(d, 'yyyy-MM-dd') || '';
+    
+    if (this.blockedDates.includes(dateString)) return false;
+
+    const dayOfWeek = d.getDay();
+    const dailySlots = this.weeklySchedule[dayOfWeek];
+    if (!dailySlots || dailySlots.trim() === '') return false;
+
+    return true;
   };
-  
-  // NUEVO MÉTODO: Se dispara al tocar un día en el calendario
+
+  // CUANDO EL CLIENTE TOCA UN DÍA
   async onDateSelected(date: Date | null) {
     this.selectedDate = date;
-    this.selectedSlot = null; // Reseteamos la hora elegida al cambiar de día
-    this.occupiedSlots = [];  // Vaciamos las horas ocupadas del día anterior
+    this.selectedSlot = null;
+    this.occupiedSlots = [];
+    this.availableSlots = [];
 
     if (date) {
-      // Formateamos la fecha para que coincida exactamente con cómo la guardamos en la BD
       const formattedDate = this.datePipe.transform(date, 'yyyy-MM-dd') || '';
-      // Pedimos a Firebase las horas pilladas
-      this.occupiedSlots = await this.appointmentService.getOccupiedSlots(formattedDate);
+      
+      const dayOfWeek = date.getDay(); 
+      const slotsStr = this.weeklySchedule[dayOfWeek] || '';
+      this.availableSlots = slotsStr.split(',').map((s: string) => s.trim()).filter((s: string) => s);
+
+      const firebaseOccupied = await this.appointmentService.getOccupiedSlots(formattedDate);
+      const adminBlocked = this.blockedSlotsAdmin[formattedDate] || [];
+
+      this.occupiedSlots = [...firebaseOccupied, ...adminBlocked];
     }
   }
-// NUEVO: El portero que decide si un botón se bloquea o no
+
+  // EL PORTERO DE DISCOTECA
   isSlotDisabled(slot: string): boolean {
-    // 1. Si la hora ya la ha reservado otra persona, la bloqueamos
     if (this.occupiedSlots.includes(slot)) return true;
 
-    // 2. Comprobamos si el usuario ha pinchado en el día de HOY
     if (this.selectedDate) {
       const today = new Date();
       const isToday = 
@@ -83,38 +100,30 @@ export class HomeComponent implements OnInit {
         this.selectedDate.getMonth() === today.getMonth() &&
         this.selectedDate.getFullYear() === today.getFullYear();
 
-      // Si es hoy, miramos el reloj
       if (isToday) {
-        // Partimos el texto "16:30" en dos números: 16 y 30
         const [slotHour, slotMinute] = slot.split(':').map(Number);
         const currentHour = today.getHours();
         const currentMinute = today.getMinutes();
 
-        // Si la hora de la cita ya pasó, o si estamos en la misma hora pero ya pasaron los minutos... ¡bloqueado!
         if (slotHour < currentHour || (slotHour === currentHour && slotMinute <= currentMinute)) {
           return true;
         }
       }
     }
-
-    // Si sobrevive a todos los filtros, la hora está libre
     return false;
   }
-  selectSlot(slot: string) {
-    // CAMBIAMOS ESTA LÍNEA para que use la misma regla
-    if (!this.isSlotDisabled(slot)) { 
-      this.selectedSlot = slot;
 
+  selectSlot(slot: string) {
+    if (!this.isSlotDisabled(slot)) {
+      this.selectedSlot = slot;
       setTimeout(() => {
         const confirmDiv = document.getElementById('confirm-zone');
-        if (confirmDiv) {
-          confirmDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        if (confirmDiv) confirmDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
     }
   }
 
-async confirmAppointment() { 
+  async confirmAppointment() { 
     if (!this.selectedDate || !this.selectedSlot) {
       alert('Por favor, selecciona un día y una hora primero.');
       return;
@@ -123,7 +132,6 @@ async confirmAppointment() {
     const user = this.authService.getCurrentUser();
     if (!user) return;
 
-    // --- PUNTO DE CONTROL 1: VERIFICAR TELÉFONO ---
     const profile = await this.authService.getUserProfile(user.uid);
     if (!profile || !profile['phone']) {
       alert('¡Espera! Yeray necesita tu número de teléfono por si ocurre algún imprevisto. Por favor, añádelo antes de pedir cita.');
@@ -131,19 +139,13 @@ async confirmAppointment() {
       return; 
     }
 
-    // --- PUNTO DE CONTROL 2: LÍMITE ANTI-SPAM (Máx 3 citas) ---
-    // 1. Nos traemos todo el historial de este usuario
     const userHistory = await this.appointmentService.getUserAppointments(user.uid);
-    // 2. Filtramos solo las que están "vivas" (pendientes o ya aceptadas por Yeray)
-    const activeAppointments = userHistory.filter(
-      appt => appt.status === 'pending' || appt.status === 'confirmed'
-    );
-    // 3. Si tiene 3 o más... ¡hachazo!
+    const activeAppointments = userHistory.filter(appt => appt.status === 'pending' || appt.status === 'confirmed');
+    
     if (activeAppointments.length >= 3) {
-      alert('Por seguridad, solo puedes tener un máximo de 3 citas activas a la vez. Podrás pedir otra cuando Yeray complete o gestione tus reservas actuales.');
-      return; // Cortamos la ejecución, la cita no se guarda
+      alert('Solo puedes tener un máximo de 3 citas activas a la vez.');
+      return; 
     }
-    // ----------------------------------------------------------
 
     const formattedDate = this.datePipe.transform(this.selectedDate, 'yyyy-MM-dd') || '';
 
@@ -160,7 +162,6 @@ async confirmAppointment() {
     try {
       await this.appointmentService.createAppointment(newAppointment);
       alert('¡Cita confirmada con éxito!');
-      
       this.selectedDate = null;
       this.selectedSlot = null;
     } catch (error) {

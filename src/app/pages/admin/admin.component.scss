@@ -1,6 +1,7 @@
+/* Aumentamos el ancho máximo para que en PC quepan las dos columnas */
 .admin-container {
   padding: 20px;
-  max-width: 600px;
+  max-width: 1200px; /* <-- ESTO ES CLAVE PARA PC */
   margin: 0 auto;
 }
 
@@ -77,7 +78,10 @@
   .btn-gold { background-color: #1a1a1a !important; color: #D4AF37 !important; }
 }
 
-.empty-state { text-align: center; color: #888; margin-top: 40px; mat-icon { font-size: 48px; height: 48px; width: 48px; margin-bottom: 16px; opacity: 0.5; } }
+.empty-state { 
+  text-align: center; color: #888; margin-top: 40px; 
+  mat-icon { font-size: 48px; height: 48px; width: 48px; margin-bottom: 16px; opacity: 0.5; } 
+}
 
 .admin-btn {
   color: #1a1a1a !important;
@@ -90,15 +94,40 @@
   }
 }
 
+/* ========================================= */
+/* DISTRIBUCIÓN LIMPIA PARA PC Y MÓVIL       */
+/* ========================================= */
+
 .dashboard-grid {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
   
   @media (min-width: 768px) {
-    flex-direction: row;
+    flex-direction: row; /* En PC se ponen lado a lado */
     align-items: flex-start;
   }
 }
-.calendar-section { flex: 1; }
-.agenda-section { flex: 2; }
+
+.calendar-section { 
+  flex: 1; 
+  display: flex;
+  justify-content: center; /* Mantiene el calendario en el centro de su columna */
+}
+
+.agenda-section { 
+  flex: 1.5; /* Le damos un poco más de anchura a la lista de citas en PC */
+}
+
+/* DEJAMOS EL CALENDARIO EXACTAMENTE COMO ES EN MÓVIL */
+.calendar-card {
+  width: 100%;
+  max-width: 400px !important; /* Forzamos a que no se estire nunca más de esto */
+  border-radius: 16px !important;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+}
+
+mat-calendar {
+  width: 100% !important;
+}

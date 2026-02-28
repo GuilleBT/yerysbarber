@@ -6,13 +6,17 @@ import { Firestore, doc, getDoc, setDoc } from '@angular/fire/firestore';
   providedIn: 'root'
 })
 export class AuthService {
-  private auth = inject(Auth);
-  private firestore = inject(Firestore); // Inyectamos la base de datos para el perfil
   
-  // Observable para saber si el usuario está logueado en tiempo real
+  private auth = inject(Auth);
+  private firestore = inject(Firestore); 
+  
+  // ==========================================================
+  // LA ÚNICA FUENTE DE LA VERDAD PARA EL CORREO DEL ADMINISTRADOR
+  // ==========================================================
+  public readonly ADMIN_EMAIL = 'guillermobeltrantabares@gmail.com';
+
   public user$ = authState(this.auth);
 
-  // 1. INICIAR SESIÓN CON GOOGLE
   async loginWithGoogle() {
     try {
       const provider = new GoogleAuthProvider();
@@ -24,7 +28,6 @@ export class AuthService {
     }
   }
 
-  // 2. CERRAR SESIÓN
   async logout() {
     try {
       await signOut(this.auth);
@@ -33,12 +36,10 @@ export class AuthService {
     }
   }
 
-  // 3. OBTENER USUARIO ACTUAL (Para lecturas rápidas)
   getCurrentUser() {
     return this.auth.currentUser;
   }
 
-  // 4. PERFIL: Traer los datos extra del cliente
   async getUserProfile(uid: string) {
     try {
       const docRef = doc(this.firestore, `users/${uid}`);
@@ -50,11 +51,9 @@ export class AuthService {
     }
   }
 
-  // 5. PERFIL: Guardar o actualizar el teléfono
   async updateUserProfile(uid: string, profileData: any) {
     try {
       const docRef = doc(this.firestore, `users/${uid}`);
-      // { merge: true } es vital para no borrar datos si en el futuro añadimos más cosas
       await setDoc(docRef, profileData, { merge: true });
     } catch (error) {
       console.error('Error al guardar el perfil:', error);

@@ -16,7 +16,7 @@ export class WelcomeComponent implements OnInit {
   private router = inject(Router);
 
   // PON AQUÍ EL CORREO REAL DE YERAY
-  private ADMIN_EMAIL = 'aguillermobeltrantabares@gmail.com'; 
+  private ADMIN_EMAIL = ' guillermobeltrantabares@gmail.com'; 
 
   ngOnInit() {
     // Escuchamos el estado del usuario en tiempo real

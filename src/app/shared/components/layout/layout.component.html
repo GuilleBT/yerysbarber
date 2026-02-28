@@ -1,8 +1,8 @@
 <mat-toolbar class="navbar">
-<div class="brand" routerLink="/">
-  <img src="assets/logo.png" alt="YerysBarber Logo" class="brand-logo">
-  <span class="brand-title">YerysBarber</span>
-</div>
+  <div class="brand" [routerLink]="isAdmin ? '/admin' : '/'" style="cursor: pointer;">
+    <img src="assets/logo.png" alt="YerysBarber Logo" class="brand-logo">
+    <span class="brand-title">YerysBarber</span>
+  </div>
 
   <span class="spacer"></span>
 
@@ -21,7 +21,8 @@
           <span class="user-name">Hola, {{ (user.displayName || 'Usuario').split(' ')[0] }}</span>
         </div>
       }
-<button mat-icon-button class="profile-btn" routerLink="/perfil" title="Mi Perfil">
+
+      <button mat-icon-button class="profile-btn" routerLink="/perfil" title="Mi Perfil">
         <mat-icon>settings</mat-icon>
       </button>
 

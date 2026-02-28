@@ -159,12 +159,37 @@ export class AppointmentService {
     try {
       const docRef = doc(this.firestore, 'settings/general');
       const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) return docSnap.data();
       
-      // Si es la primera vez que entra, le damos estos valores por defecto
+      // 1. El horario base que queremos inyectar si falta
+      const defaultWeekly = {
+        1: '10:00, 10:30, 11:00, 11:30, 12:00, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00', // Lunes
+        2: '10:00, 10:30, 11:00, 11:30, 12:00, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00', // Martes
+        3: '10:00, 10:30, 11:00, 11:30, 12:00, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00', // Miércoles
+        4: '10:00, 10:30, 11:00, 11:30, 12:00, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00', // Jueves
+        5: '10:00, 10:30, 11:00, 11:30, 12:00, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00', // Viernes
+        6: '10:00, 10:30, 11:00, 11:30, 12:00, 12:30, 13:00', // Sábado
+        0: '' // Domingo
+      };
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        
+        // 2. PARCHE MÁGICO: Si el documento es el viejo y no tiene horario semanal, se lo enchufamos
+        if (!data['weeklySchedule']) {
+          data['weeklySchedule'] = defaultWeekly;
+        }
+        // Lo mismo para los bloqueos
+        if (!data['blockedSlots']) {
+          data['blockedSlots'] = {};
+        }
+        return data;
+      }
+      
+      // 3. Si es la primera vez que entra en su vida y no hay nada en la BD
       return {
         blockedDates: [],
-        availableSlots: '10:00, 10:30, 11:00, 11:30, 12:00, 12:30, 13:00, 13:30, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00, 19:30'
+        weeklySchedule: defaultWeekly,
+        blockedSlots: {}
       };
     } catch (error) {
       console.error('Error al cargar ajustes:', error);

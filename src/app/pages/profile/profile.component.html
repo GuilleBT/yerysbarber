@@ -1,70 +1,98 @@
 <div class="profile-container">
   
   @if (isAdmin) {
-    <mat-card class="profile-card admin-card" style="max-width: 700px;">
-      <mat-card-header>
+    <mat-card class="profile-card admin-card" style="max-width: 700px; padding: 0;">
+      <mat-card-header style="padding: 16px;">
         <div mat-card-avatar class="header-image admin-icon">
           <mat-icon>build</mat-icon>
         </div>
-        <mat-card-title>Ajustes de la Barbería</mat-card-title>
-        <mat-card-subtitle>Controla tus horarios y vacaciones</mat-card-subtitle>
+        <mat-card-title>Panel del Jefe</mat-card-title>
+        <mat-card-subtitle>Ajusta las reglas de la barbería</mat-card-subtitle>
       </mat-card-header>
 
-      <mat-card-content class="form-content">
-        
-        <h3 style="margin-top: 16px; color: #D4AF37;">1. Horarios de Trabajo</h3>
-        <p style="font-size: 12px; color: #666; margin-top: -10px;">Escribe las horas separadas por comas. Si quieres abrir por la tarde un lunes, solo añade las horas aquí.</p>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Horas disponibles diarias</mat-label>
-          <textarea matInput rows="3" [(ngModel)]="slotsString"></textarea>
-        </mat-form-field>
+      <mat-card-content class="form-content" style="padding: 0 16px;">
+        <mat-accordion multi="false">
+          
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title style="color: #D4AF37; font-weight: bold;"><mat-icon style="margin-right: 8px;">schedule</mat-icon> 1. Horario Semanal</mat-panel-title>
+            </mat-expansion-panel-header>
+            <p style="font-size: 13px; color: #666;">Si dejas un día en blanco, el calendario lo bloqueará entero automáticamente.</p>
+            <mat-form-field appearance="outline" class="full-width"><mat-label>Lunes</mat-label><input matInput [(ngModel)]="weeklySchedule[1]"></mat-form-field>
+            <mat-form-field appearance="outline" class="full-width"><mat-label>Martes</mat-label><input matInput [(ngModel)]="weeklySchedule[2]"></mat-form-field>
+            <mat-form-field appearance="outline" class="full-width"><mat-label>Miércoles</mat-label><input matInput [(ngModel)]="weeklySchedule[3]"></mat-form-field>
+            <mat-form-field appearance="outline" class="full-width"><mat-label>Jueves</mat-label><input matInput [(ngModel)]="weeklySchedule[4]"></mat-form-field>
+            <mat-form-field appearance="outline" class="full-width"><mat-label>Viernes</mat-label><input matInput [(ngModel)]="weeklySchedule[5]"></mat-form-field>
+            <mat-form-field appearance="outline" class="full-width"><mat-label>Sábado</mat-label><input matInput [(ngModel)]="weeklySchedule[6]"></mat-form-field>
+            <mat-form-field appearance="outline" class="full-width"><mat-label>Domingo</mat-label><input matInput [(ngModel)]="weeklySchedule[0]"></mat-form-field>
+          </mat-expansion-panel>
 
-        <h3 style="margin-top: 16px; color: #D4AF37;">2. Bloquear Días (Vacaciones o Cierre)</h3>
-        <p style="font-size: 12px; color: #666; margin-top: -10px;">Selecciona los días en los que no aceptarás citas.</p>
-        
-        <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 16px;">
-          <mat-form-field appearance="outline" style="flex: 1; margin-bottom: -1.25em;">
-            <mat-label>Elige un día para bloquear</mat-label>
-            <input matInput [matDatepicker]="picker" [(ngModel)]="dateToBlock">
-            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-          </mat-form-field>
-          <button mat-raised-button color="warn" (click)="addBlockedDate()">Bloquear Día</button>
-        </div>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title style="color: #D4AF37; font-weight: bold;"><mat-icon style="margin-right: 8px;">do_not_disturb_on</mat-icon> 2. Tachar horas sueltas</mat-panel-title>
+            </mat-expansion-panel-header>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Selecciona un día específico</mat-label>
+              <input matInput [matDatepicker]="pickerException" (dateChange)="onExceptionDateSelected($event.value)" readonly>
+              <mat-datepicker-toggle matIconSuffix [for]="pickerException"></mat-datepicker-toggle>
+              <mat-datepicker #pickerException></mat-datepicker>
+            </mat-form-field>
+            @if (selectedExceptionDate) {
+              <div style="margin-top: 8px;">
+                <p style="margin-bottom: 8px; font-weight: bold;">Horas del {{ selectedExceptionDate | date:'shortDate' }}:</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  @for (slot of exceptionSlotsForSelectedDate; track slot) {
+                    <button mat-stroked-button [color]="isSlotBlocked(slot) ? 'warn' : ''" [style.background-color]="isSlotBlocked(slot) ? '#ffebee' : ''" [style.text-decoration]="isSlotBlocked(slot) ? 'line-through' : 'none'" (click)="toggleBlockedSlot(slot)">{{ slot }}</button>
+                  }
+                </div>
+              </div>
+            }
+          </mat-expansion-panel>
 
-        @if (blockedDates.length > 0) {
-          <div style="background: #f9f9f9; padding: 12px; border-radius: 8px;">
-            <p style="margin: 0 0 8px 0; font-weight: bold;">Días cerrados:</p>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-              @for (date of blockedDates; track date) {
-                <span style="background: #ffcdd2; color: #b71c1c; padding: 4px 12px; border-radius: 16px; font-size: 13px; display: flex; align-items: center; gap: 4px;">
-                  {{ date | date:'longDate' }}
-                  <mat-icon style="font-size: 16px; width: 16px; height: 16px; cursor: pointer;" (click)="removeBlockedDate(date)">close</mat-icon>
-                </span>
-              }
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title style="color: #D4AF37; font-weight: bold;"><mat-icon style="margin-right: 8px;">event_busy</mat-icon> 3. Cerrar por Vacaciones</mat-panel-title>
+            </mat-expansion-panel-header>
+            <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 16px;">
+              <mat-form-field appearance="outline" style="flex: 1; margin-bottom: -1.25em;">
+                <mat-label>Día a bloquear</mat-label>
+                <input matInput [matDatepicker]="picker" [(ngModel)]="dateToBlock" readonly>
+                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+              </mat-form-field>
+              <button mat-raised-button color="warn" (click)="addBlockedDate()">Bloquear</button>
             </div>
-          </div>
-        }
+            @if (blockedDates.length > 0) {
+              <div style="background: rgba(0,0,0,0.05); padding: 12px; border-radius: 8px;">
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  @for (date of blockedDates; track date) {
+                    <span style="background: #ffcdd2; color: #b71c1c; padding: 4px 12px; border-radius: 16px; font-size: 13px; display: flex; align-items: center; gap: 4px;">
+                      {{ date | date:'longDate' }} <mat-icon style="font-size: 16px; width: 16px; height: 16px; cursor: pointer;" (click)="removeBlockedDate(date)">close</mat-icon>
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+          </mat-expansion-panel>
+
+        </mat-accordion>
       </mat-card-content>
 
-      <mat-card-actions align="end" class="actions">
+      <mat-card-actions align="end" class="actions" style="padding: 16px;">
         <button mat-raised-button class="btn-gold" (click)="saveAdminSettings()" [disabled]="isSaving">
           <mat-icon>save</mat-icon> {{ isSaving ? 'Guardando...' : 'Guardar Configuración' }}
         </button>
       </mat-card-actions>
     </mat-card>
   } 
-
+  
   @else {
     <mat-card class="profile-card">
       <mat-card-header>
-        <div mat-card-avatar class="header-image">
-          <mat-icon>account_circle</mat-icon>
-        </div>
+        <div mat-card-avatar class="header-image"><mat-icon>account_circle</mat-icon></div>
         <mat-card-title>Mi Perfil</mat-card-title>
         <mat-card-subtitle>Datos de contacto</mat-card-subtitle>
       </mat-card-header>
-
       <mat-card-content class="form-content">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Teléfono móvil</mat-label>
@@ -73,7 +101,6 @@
           <mat-hint>Obligatorio para avisos urgentes</mat-hint>
         </mat-form-field>
       </mat-card-content>
-
       <mat-card-actions align="end" class="actions">
         <button mat-raised-button class="btn-gold" (click)="saveClientProfile()" [disabled]="isSaving">
           <mat-icon>save</mat-icon> {{ isSaving ? 'Guardando...' : 'Guardar Datos' }}

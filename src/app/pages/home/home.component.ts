@@ -4,6 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon'; // <-- 1. NUEVO: Importamos los iconos
 import { AppointmentService, Appointment } from '../../shared/services/appointment.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { Router } from '@angular/router';
@@ -11,7 +12,8 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatDatepickerModule, MatNativeDateModule, MatButtonModule],
+  // 2. NUEVO: Añadimos MatIconModule al final de esta lista
+  imports: [CommonModule, MatCardModule, MatDatepickerModule, MatNativeDateModule, MatButtonModule, MatIconModule],
   providers: [DatePipe],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
@@ -35,6 +37,8 @@ export class HomeComponent implements OnInit {
   weeklySchedule: any = {}; 
   blockedSlotsAdmin: any = {}; 
 
+  isCalendarReady: boolean = false;
+
   // UN SOLO ngOnInit QUE HACE LAS DOS COSAS
  async ngOnInit() {
     // 1. El Trampolín: Vigilamos en tiempo real quién entra
@@ -52,6 +56,8 @@ export class HomeComponent implements OnInit {
       this.weeklySchedule = settings.weeklySchedule || {};
       this.blockedSlotsAdmin = settings.blockedSlots || {};
     }
+
+    this.isCalendarReady = true;
   }
 
   // EL FILTRO MÁGICO DEL CALENDARIO

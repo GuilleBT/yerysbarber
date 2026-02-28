@@ -1,20 +1,27 @@
 <div class="calendar-container">
-  <mat-card class="calendar-card">
-    <mat-calendar 
-      [selected]="selectedDate" 
-      (selectedChange)="onDateSelected($event)" 
-      [dateFilter]="myDateFilter"
-      [minDate]="minDate"> </mat-calendar>
-  </mat-card>
   
-  @if (selectedDate) {
+  <mat-card class="calendar-card">
+    @if (isCalendarReady) {
+      <mat-calendar 
+        [selected]="selectedDate" 
+        (selectedChange)="onDateSelected($event)" 
+        [minDate]="minDate" 
+        [dateFilter]="myDateFilter">
+      </mat-calendar>
+    } @else {
+      <div style="text-align: center; padding: 40px; color: #D4AF37;">
+        <mat-icon style="animation: spin 2s linear infinite;">hourglass_empty</mat-icon>
+        <p>Cargando disponibilidad de Yeray...</p>
+      </div>
+    }
+  </mat-card> @if (selectedDate) {
     <div class="slots-container">
       <div class="selection-info">
         <h3>Día: {{ selectedDate | date:'fullDate' }}</h3>
       </div>
 
       <div class="slots-grid">
-       @for (slot of availableSlots; track slot) {
+        @for (slot of availableSlots; track slot) {
           <button 
             mat-stroked-button 
             [color]="selectedSlot === slot ? 'accent' : ''"
@@ -34,4 +41,5 @@
       }
     </div>
   }
+  
 </div>

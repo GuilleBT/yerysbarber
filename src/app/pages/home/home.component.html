@@ -3,11 +3,12 @@
   <mat-card class="calendar-card">
     @if (isCalendarReady) {
       <mat-calendar 
-        [selected]="selectedDate" 
-        (selectedChange)="onDateSelected($event)" 
-        [minDate]="minDate" 
-        [dateFilter]="myDateFilter">
-      </mat-calendar>
+      [(selected)]="selectedDate" 
+      (selectedChange)="onDateSelected($event)"
+      [dateFilter]="myDateFilter"
+      [minDate]="minDate" 
+      [maxDate]="maxDate">
+</mat-calendar>
     } @else {
       <div style="text-align: center; padding: 40px; color: #D4AF37;">
         <mat-icon style="animation: spin 2s linear infinite;">hourglass_empty</mat-icon>

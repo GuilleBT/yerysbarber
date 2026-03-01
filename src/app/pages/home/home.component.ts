@@ -4,7 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon'; // <-- 1. NUEVO: Importamos los iconos
+import { MatIconModule } from '@angular/material/icon'; 
 import { AppointmentService, Appointment } from '../../shared/services/appointment.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { Router } from '@angular/router';
@@ -12,7 +12,6 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-home',
   standalone: true,
-  // 2. NUEVO: Añadimos MatIconModule al final de esta lista
   imports: [CommonModule, MatCardModule, MatDatepickerModule, MatNativeDateModule, MatButtonModule, MatIconModule],
   providers: [DatePipe],
   templateUrl: './home.component.html',
@@ -24,32 +23,37 @@ export class HomeComponent implements OnInit {
   private datePipe = inject(DatePipe);
   private router = inject(Router);
 
- 
-  minDate: Date = new Date();
+  // --- VARIABLES DE LÍMITE DE FECHA ---
+  minDate: Date = new Date(); 
+  maxDate: Date = new Date(); 
+
   selectedDate: Date | null = null;
   selectedSlot: string | null = null;
   
   occupiedSlots: string[] = []; 
   availableSlots: string[] = []; 
   
-  // Variables del "Cerebro" de Yeray
   blockedDates: string[] = []; 
   weeklySchedule: any = {}; 
   blockedSlotsAdmin: any = {}; 
 
   isCalendarReady: boolean = false;
 
-  // UN SOLO ngOnInit QUE HACE LAS DOS COSAS
- async ngOnInit() {
-    // 1. El Trampolín: Vigilamos en tiempo real quién entra
+  async ngOnInit() {
+    // 1. EL CANDADO DE LOS MESES
+    const hoy = new Date();
+    this.minDate = hoy; // No pueden reservar ayer
+    // Calculamos el último día del mes siguiente (Mes actual + 2, día 0 = final del mes anterior)
+    this.maxDate = new Date(hoy.getFullYear(), hoy.getMonth() + 2, 0);
+
+    // 2. EL TRAMPOLÍN: Vigilamos quién entra
     this.authService.user$.subscribe(user => {
-      // Usamos el correo centralizado del servicio
       if (user && user.email === this.authService.ADMIN_EMAIL) {
         this.router.navigate(['/admin']); 
       }
     });
 
-    // 2. Cargamos los ajustes del calendario
+    // 3. CARGAMOS LOS AJUSTES DE YERAY
     const settings = await this.appointmentService.getBarbershopSettings();
     if (settings) {
       this.blockedDates = settings.blockedDates || [];
@@ -129,6 +133,7 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  // BOTÓN FINAL DE RESERVA
   async confirmAppointment() { 
     if (!this.selectedDate || !this.selectedSlot) {
       alert('Por favor, selecciona un día y una hora primero.');
@@ -145,11 +150,12 @@ export class HomeComponent implements OnInit {
       return; 
     }
 
+    // EL ESCUDO ANTI-SPAM (Máximo 6 citas)
     const userHistory = await this.appointmentService.getUserAppointments(user.uid);
     const activeAppointments = userHistory.filter(appt => appt.status === 'pending' || appt.status === 'confirmed');
     
-    if (activeAppointments.length >= 3) {
-      alert('Solo puedes tener un máximo de 3 citas activas a la vez.');
+    if (activeAppointments.length >= 6) {
+      alert('Solo puedes tener un máximo de 6 citas activas a la vez.');
       return; 
     }
 

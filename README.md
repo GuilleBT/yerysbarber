@@ -1,59 +1,80 @@
-# Yerysbarber
+# 💈 YerysBarber - Progressive Web App (PWA) de Gestión de Citas
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.4.
+![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![Telegram API](https://img.shields.io/badge/Telegram_API-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)
 
-## Development server
+YerysBarber es una aplicación web progresiva (PWA) desarrollada a medida para la digitalización y automatización de las reservas de una barbería profesional. Diseñada bajo una arquitectura Serverless, elimina la necesidad de gestión manual de la agenda, optimizando el tiempo del negocio y mejorando la experiencia del cliente.
 
-To start a local development server, run:
+## 🚀 Características Principales
 
-```bash
-ng serve
-```
+### Para el Cliente (Experiencia de Usuario)
+* **Instalable (PWA):** Posibilidad de instalar la aplicación directamente en el escritorio del móvil (iOS y Android) ofreciendo una experiencia de App Nativa.
+* **Autenticación Segura:** Sistema de login y registro gestionado mediante Firebase Auth.
+* **Reserva Dinámica:** Calendario interactivo (Angular Material) que consulta en tiempo real la disponibilidad de la base de datos, bloqueando días pasados y limitando la reserva a un máximo de 2 meses vista.
+* **Control Anti-Spam:** Regla de negocio implementada que limita a 6 el número máximo de citas activas por usuario para prevenir bloqueos malintencionados de la agenda.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+### Para el Administrador (Yeray)
+* **Notificaciones Push Inmediatas:** Integración directa con la API de Telegram. Cada nueva reserva genera una alerta instantánea en el dispositivo móvil del administrador.
+* **Panel de Gestión (Dashboard):** Interfaz exclusiva para el rol de administrador (`ADMIN_EMAIL`) con control total sobre las citas (confirmar, cancelar, completar).
+* **Control Horario:** Capacidad de modificar el horario semanal, establecer días de vacaciones y bloquear tramos horarios específicos desde la propia aplicación.
+* **Analíticas de Negocio:** Contador en tiempo real del número total de servicios completados.
 
-## Code scaffolding
+## 🛠️ Stack Tecnológico
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+* **Frontend:** Angular 21 (Standalone Components), HTML5, SCSS, Angular Material.
+* **Backend as a Service (BaaS):** Firebase (Firestore Database, Authentication).
+* **Integraciones:** Telegram Bot API (HttpClient).
+* **Despliegue:** Vercel (Configurado con `vercel.json` para enrutamiento SPA).
 
-```bash
-ng generate component component-name
-```
+## ⚙️ Reglas de Seguridad (Firestore Rules)
+El proyecto cuenta con un sistema estricto de reglas de seguridad en la nube:
+* Los usuarios solo pueden visualizar las horas disponibles (lectura pública limitada) y crear sus propias citas.
+* Solo el rol de Administrador tiene privilegios de escritura sobre la configuración global de la barbería (`settings/general`) y capacidad de alterar el estado de las citas de terceros.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## 💻 Instalación y Despliegue en Local
 
-```bash
-ng generate --help
-```
+Para clonar y ejecutar este proyecto en un entorno local:
 
-## Building
+1. **Clonar el repositorio:**
+   ```bash
+   git clone [https://github.com/tu-usuario/yerysbarber.git](https://github.com/tu-usuario/yerysbarber.git)
+   cd yerysbarber
 
-To build the project run:
+   npm install
 
-```bash
-ng build
-```
+   Configurar Variables de Entorno:
+Debes crear tus propios archivos environment.ts y environment.development.ts en src/environments/ e incluir tus credenciales de Firebase y el Token de tu Bot de Telegram:
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+TypeScript
+export const environment = {
+  production: false,
+  firebase: {
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_PROYECTO.firebaseapp.com",
+    projectId: "TU_PROYECTO",
+    storageBucket: "TU_PROYECTO.appspot.com",
+    messagingSenderId: "TU_SENDER_ID",
+    appId: "TU_APP_ID"
+  },
+  telegram: {
+    botToken: "TU_TELEGRAM_BOT_TOKEN",
+    chatId: "TU_ADMIN_CHAT_ID"
+  }
+};
+Ejecutar el servidor de desarrollo:
 
-## Running unit tests
+Bash
+ng serve -o
+🌐 Despliegue en Producción
+Este proyecto está optimizado para su despliegue en Vercel. Asegúrate de incluir el archivo vercel.json en el directorio compilado (browser) para el correcto manejo de las rutas en la Single Page Application (SPA):
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+JSON
+{
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
+Comando de despliegue directo con Vercel CLI:
 
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Bash
+vercel deploy dist/yerysbarber/browser --prod

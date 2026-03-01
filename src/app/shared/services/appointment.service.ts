@@ -1,8 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { Firestore, collection, addDoc, query, where, getDocs, doc, updateDoc, getDoc, setDoc } from '@angular/fire/firestore';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../enviroments/enviroment';
 
 export interface Appointment {
-  id?: string; // ID opcional, se asignará automáticamente al guardar en Firestore
+  id?: string;
   clientId: string;
   clientName: string;
   date: string;
@@ -17,12 +19,23 @@ export interface Appointment {
   providedIn: 'root'
 })
 export class AppointmentService {
+  // Inyecciones de dependencias modernas y limpias
   private firestore = inject(Firestore);
+  private http = inject(HttpClient);
 
+  // ---------------------------------------------------------
+  // 1. CREAR CITA Y AVISAR POR TELEGRAM
+  // ---------------------------------------------------------
   async createAppointment(appointment: Appointment) {
     try {
       const appointmentsRef = collection(this.firestore, 'appointments');
       const docRef = await addDoc(appointmentsRef, appointment);
+      
+      // ¡AQUÍ ESTÁ EL GATILLO! 
+      // Si llega a esta línea, Firebase ha guardado la cita correctamente.
+      // Disparamos el aviso a Telegram de forma invisible.
+      this.enviarAvisoTelegram(appointment.clientName, appointment.date, appointment.time);
+
       return docRef;
     } catch (error) {
       console.error('Error al guardar la cita:', error);
@@ -30,17 +43,17 @@ export class AppointmentService {
     }
   }
 
-  // NUEVA FUNCIÓN: Busca las horas ocupadas en un día concreto
-  // Busca las horas ocupadas en un día concreto (ignorando las canceladas)
+  // ---------------------------------------------------------
+  // FUNCIONES DEL CLIENTE
+  // ---------------------------------------------------------
   async getOccupiedSlots(date: string): Promise<string[]> {
     try {
       const appointmentsRef = collection(this.firestore, 'appointments');
       const q = query(appointmentsRef, where('date', '==', date));
       const querySnapshot = await getDocs(q);
       
-      // Filtramos los documentos para NO incluir los que están cancelados
       return querySnapshot.docs
-        .filter(document => document.data()['status'] !== 'cancelled') // <-- EL FILTRO MÁGICO
+        .filter(document => document.data()['status'] !== 'cancelled')
         .map(document => document.data()['time'] as string);
     } catch (error) {
       console.error('Error al obtener disponibilidad:', error);
@@ -51,11 +64,9 @@ export class AppointmentService {
   async getUserAppointments(userId: string): Promise<Appointment[]> {
     try {
       const appointmentsRef = collection(this.firestore, 'appointments');
-      // Buscamos solo las citas de este usuario en concreto
       const q = query(appointmentsRef, where('clientId', '==', userId));
       const querySnapshot = await getDocs(q);
       
-      // Mapeamos los datos y recuperamos el ID del documento
       const appointments = querySnapshot.docs.map(doc => {
         return {
           id: doc.id,
@@ -63,7 +74,6 @@ export class AppointmentService {
         } as Appointment;
       });
 
-      // Ordenamos las citas de más reciente a más antigua
       return appointments.sort((a, b) => b.createdAt - a.createdAt);
     } catch (error) {
       console.error('Error al obtener el historial:', error);
@@ -73,16 +83,17 @@ export class AppointmentService {
 
   async cancelAppointment(appointmentId: string): Promise<void> {
     try {
-      // Apuntamos al documento exacto usando su ID
       const docRef = doc(this.firestore, 'appointments', appointmentId);
-      // Actualizamos solo el campo status
       await updateDoc(docRef, { status: 'cancelled' });
     } catch (error) {
       console.error('Error al cancelar la cita:', error);
       throw error;
     }
   }
-  // ADMIN: Obtiene todas las citas de TODOS los clientes para un día concreto
+
+  // ---------------------------------------------------------
+  // FUNCIONES DEL ADMIN (YERAY)
+  // ---------------------------------------------------------
   async getDailyAgenda(date: string): Promise<Appointment[]> {
     try {
       const appointmentsRef = collection(this.firestore, 'appointments');
@@ -94,7 +105,6 @@ export class AppointmentService {
         ...doc.data()
       } as Appointment));
 
-      // Ordenamos por hora para que le salgan en orden en la agenda
       return appointments.sort((a, b) => a.time.localeCompare(b.time));
     } catch (error) {
       console.error('Error al obtener la agenda:', error);
@@ -102,20 +112,18 @@ export class AppointmentService {
     }
   }
 
-  // ADMIN: Obtiene el número total de cortes completados en la historia
   async getTotalCompletedCuts(): Promise<number> {
     try {
       const appointmentsRef = collection(this.firestore, 'appointments');
       const q = query(appointmentsRef, where('status', '==', 'completed'));
       const querySnapshot = await getDocs(q);
-      return querySnapshot.size; // Devuelve directamente la cantidad de documentos
+      return querySnapshot.size;
     } catch (error) {
       console.error('Error al contar los cortes:', error);
       return 0;
     }
   }
 
-  // ADMIN: Marca una cita como completada
   async markAsCompleted(appointmentId: string): Promise<void> {
     try {
       const docRef = doc(this.firestore, 'appointments', appointmentId);
@@ -125,7 +133,7 @@ export class AppointmentService {
       throw error;
     }
   }
-// ADMIN: Cambia el estado de una cita al valor que le pasemos
+
   async updateAppointmentStatus(appointmentId: string, newStatus: 'confirmed' | 'cancelled' | 'completed'): Promise<void> {
     try {
       const docRef = doc(this.firestore, 'appointments', appointmentId);
@@ -135,7 +143,7 @@ export class AppointmentService {
       throw error;
     }
   }
-  // ADMIN: Obtiene TODAS las peticiones pendientes globales
+
   async getAllPendingAppointments(): Promise<Appointment[]> {
     try {
       const appointmentsRef = collection(this.firestore, 'appointments');
@@ -147,45 +155,38 @@ export class AppointmentService {
         ...doc.data()
       } as Appointment));
 
-      // Las ordenamos por fecha para que vea primero las más urgentes
       return appointments.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
     } catch (error) {
       console.error('Error al obtener pendientes:', error);
       return [];
     }
   }
-  // ADMIN AJUSTES: Cargar la configuración de la barbería
+
+  // ---------------------------------------------------------
+  // FUNCIONES DE AJUSTES DE LA BARBERÍA
+  // ---------------------------------------------------------
   async getBarbershopSettings(): Promise<any> {
     try {
       const docRef = doc(this.firestore, 'settings/general');
       const docSnap = await getDoc(docRef);
       
-      // 1. El horario base que queremos inyectar si falta
       const defaultWeekly = {
-        1: '10:00, 10:30, 11:00, 11:30, 12:00, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00', // Lunes
-        2: '10:00, 10:30, 11:00, 11:30, 12:00, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00', // Martes
-        3: '10:00, 10:30, 11:00, 11:30, 12:00, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00', // Miércoles
-        4: '10:00, 10:30, 11:00, 11:30, 12:00, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00', // Jueves
-        5: '10:00, 10:30, 11:00, 11:30, 12:00, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00', // Viernes
-        6: '10:00, 10:30, 11:00, 11:30, 12:00, 12:30, 13:00', // Sábado
-        0: '' // Domingo
+        1: '10:00, 10:30, 11:00, 11:30, 12:00, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00',
+        2: '10:00, 10:30, 11:00, 11:30, 12:00, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00',
+        3: '10:00, 10:30, 11:00, 11:30, 12:00, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00',
+        4: '10:00, 10:30, 11:00, 11:30, 12:00, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00',
+        5: '10:00, 10:30, 11:00, 11:30, 12:00, 16:00, 16:30, 17:00, 17:30, 18:00, 18:30, 19:00',
+        6: '10:00, 10:30, 11:00, 11:30, 12:00, 12:30, 13:00',
+        0: ''
       };
 
       if (docSnap.exists()) {
         const data = docSnap.data();
-        
-        // 2. PARCHE MÁGICO: Si el documento es el viejo y no tiene horario semanal, se lo enchufamos
-        if (!data['weeklySchedule']) {
-          data['weeklySchedule'] = defaultWeekly;
-        }
-        // Lo mismo para los bloqueos
-        if (!data['blockedSlots']) {
-          data['blockedSlots'] = {};
-        }
+        if (!data['weeklySchedule']) data['weeklySchedule'] = defaultWeekly;
+        if (!data['blockedSlots']) data['blockedSlots'] = {};
         return data;
       }
       
-      // 3. Si es la primera vez que entra en su vida y no hay nada en la BD
       return {
         blockedDates: [],
         weeklySchedule: defaultWeekly,
@@ -197,7 +198,6 @@ export class AppointmentService {
     }
   }
 
-  // ADMIN AJUSTES: Guardar configuración
   async saveBarbershopSettings(settings: any): Promise<void> {
     try {
       const docRef = doc(this.firestore, 'settings/general');
@@ -207,4 +207,27 @@ export class AppointmentService {
       throw error;
     }
   }
+
+  // ---------------------------------------------------------
+  // EL MOTOR DE TELEGRAM
+  // ---------------------------------------------------------
+  private enviarAvisoTelegram(nombreCliente: string, fecha: string, hora: string) {
+  // Leemos las claves desde el entorno protegido
+  const telegramToken = environment.telegramToken;
+  const chatId = environment.telegramChatId;
+
+  const url = `https://api.telegram.org/bot${telegramToken}/sendMessage`;
+
+  const mensaje = `💈 ¡NUEVA RESERVA!\n\n👤 Cliente: ${nombreCliente}\n📅 Fecha: ${fecha}\n⏰ Hora: ${hora}\n\nRevisa tu panel de YerysBarber.`;
+
+  const body = {
+    chat_id: chatId,
+    text: mensaje
+  };
+
+  this.http.post(url, body).subscribe({
+    next: () => console.log('¡Mensaje de Telegram enviado con éxito!'),
+    error: (err) => console.error('Error al enviar el aviso por Telegram', err)
+  });
+}
 }

@@ -1,7 +1,7 @@
 import { ApplicationConfig, provideZoneChangeDetection, LOCALE_ID, isDevMode } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
-
+import { environment } from '../enviroments/enviroment';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
@@ -12,22 +12,13 @@ import { provideServiceWorker } from '@angular/service-worker';
 
 registerLocaleData(localeEs, 'es');
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAyDK9dnzkKXkOASvSkh4HGHwqGH4-lvk4",
-  authDomain: "yerysbarber.firebaseapp.com",
-  projectId: "yerysbarber",
-  storageBucket: "yerysbarber.firebasestorage.app",
-  messagingSenderId: "643914939712",
-  appId: "1:643914939712:web:7287a7703e3857b8448ea5"
-};
-
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideZoneChangeDetection({ eventCoalescing: true }),
     { provide: LOCALE_ID, useValue: 'es' },
     { provide: MAT_DATE_LOCALE, useValue: 'es-ES' },
-    provideFirebaseApp(() => initializeApp(firebaseConfig)),
+    provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideAuth(() => getAuth()),
     provideFirestore(() => getFirestore()), provideServiceWorker('ngsw-worker.js', {
             enabled: !isDevMode(),

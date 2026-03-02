@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Firestore, collection, addDoc, query, where, getDocs, doc, updateDoc, getDoc, setDoc } from '@angular/fire/firestore';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../enviroments/enviroment';
+import { environment } from '../../../environments/enviroment';
 
 export interface Appointment {
   id?: string;

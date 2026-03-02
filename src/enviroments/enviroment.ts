@@ -11,5 +11,5 @@ export const environment = {
 },
 
   telegramToken: "8665547003:AAEbTpm5H1YEo0dKTzMB_QV1NQU-fnqeigo",
-  telegramChatId: "1784823230"
+  telegramChatId: "6350022628"
 };

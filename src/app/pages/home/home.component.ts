@@ -40,11 +40,18 @@ export class HomeComponent implements OnInit {
   isCalendarReady: boolean = false;
 
   async ngOnInit() {
-    // 1. EL CANDADO DE LOS MESES
+    // 1. EL CANDADO DE LAS SEMANAS
     const hoy = new Date();
     this.minDate = hoy; // No pueden reservar ayer
-    // Calculamos el último día del mes siguiente (Mes actual + 2, día 0 = final del mes anterior)
-    this.maxDate = new Date(hoy.getFullYear(), hoy.getMonth() + 2, 0);
+
+    // ¿Cuántos días faltan para el domingo de esta semana?
+    const diaSemana = hoy.getDay(); // 0 es Domingo, 1 es Lunes, etc.
+    const diasParaDomingo = diaSemana === 0 ? 0 : 7 - diaSemana;
+
+    // Límite: Sumamos los días hasta este domingo + 7 días de la semana que viene
+    const limiteDate = new Date();
+    limiteDate.setDate(hoy.getDate() + diasParaDomingo + 7);
+    this.maxDate = limiteDate;
 
     // 2. EL TRAMPOLÍN: Vigilamos quién entra
     this.authService.user$.subscribe(user => {

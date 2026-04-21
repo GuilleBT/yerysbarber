@@ -1,53 +1,220 @@
+@use "sass:color";
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap');
+
+// ── Variables ───────────────────────────────────────────────────────────────
+$gold:       #c9a54b;
+$dark:       #1a1a1a;
+$text:       #1e1e1e;
+$text-soft:  #666;
+$gray-bg:    #fcf9f5;
+$card-bg:    #ffffff;
+$border:     rgba(#c9a54b, 0.14);
+$radius:     14px;
+
+// ── Keyframes ───────────────────────────────────────────────────────────────
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+// Icono del empty-state: flotación continua
+@keyframes floatIcon {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+// Spinner propio del loading
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Contenedor ───────────────────────────────────────────────────────────────
 .appointments-container {
-  padding: 20px;
-  max-width: 600px;
+  padding: 24px 16px 48px;
+  max-width: 620px;
   margin: 0 auto;
+  font-family: 'Montserrat', sans-serif;
+  background: $gray-bg;
+  min-height: calc(100vh - 60px);
+  animation: fadeIn 0.4s ease both;
 }
 
+// ── Título de página ──────────────────────────────────────────────────────────
 .page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 34px;
+  font-weight: 700;
   text-align: center;
-  color: #1a1a1a;
-  margin-bottom: 24px;
-  font-weight: 600;
+  color: $text;
+  margin-bottom: 28px;
+  letter-spacing: 0.5px;
+
+  animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+
+  // Línea dorada decorativa
+  &::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 2px;
+    background: linear-gradient(90deg, $gold, color.adjust($gold, $lightness: 10%));
+    margin: 10px auto 0;
+    border-radius: 2px;
+  }
 }
 
-/* Estados de carga y vacío */
-.loading-state, .empty-state {
+// ── Section titles ────────────────────────────────────────────────────────────
+.section-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: $text-soft;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  padding-bottom: 0;
+  border-bottom: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 18px;
+    height: 2px;
+    background: $gold;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+}
+
+// ── Estados de carga y vacío ─────────────────────────────────────────────────
+.loading-state,
+.empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 40px;
+  margin-top: 60px;
   text-align: center;
-  color: #666;
+  color: $text-soft;
+  gap: 16px;
+  animation: fadeIn 0.5s ease both;
 
-  .empty-icon {
-    font-size: 60px;
-    height: 60px;
-    width: 60px;
-    color: #ccc;
-    margin-bottom: 16px;
-  }
-
-  .btn-gold {
-    margin-top: 16px;
-    background-color: #D4AF37 !important;
-    color: #1a1a1a !important;
+  p {
+    font-size: 15px;
+    font-weight: 400;
+    margin: 0;
+    letter-spacing: 0.3px;
   }
 }
 
-/* Tarjetas de citas */
+.empty-icon {
+  font-size: 64px !important;
+  height: 64px !important;
+  width: 64px !important;
+  color: rgba($gold, 0.4) !important;
+
+  animation: floatIcon 3s ease-in-out infinite;
+}
+
+.empty-state .btn-gold {
+  margin-top: 8px;
+  background: linear-gradient(135deg, $gold, color.adjust($gold, $lightness: -6%)) !important;
+  color: $dark !important;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border-radius: 28px !important;
+  padding: 0 28px !important;
+  height: 48px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba($gold, 0.3) !important;
+    transform: translateY(-2px);
+  }
+}
+
+// ── Lista de citas ────────────────────────────────────────────────────────────
 .appointment-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
+// ── Tarjeta individual ────────────────────────────────────────────────────────
 .appointment-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05) !important;
+  border-radius: $radius !important;
+  border: 1px solid $border !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+  background: $card-bg !important;
+  overflow: hidden;
+  position: relative;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+
+  // Franja izquierda dorada
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, $gold, color.adjust($gold, $lightness: -8%));
+    border-radius: $radius 0 0 $radius;
+  }
+
+  &:hover {
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.09) !important;
+    transform: translateY(-2px);
+  }
+
+  // ── Animación en cascada ──
+  opacity: 0;
+  animation: fadeSlideUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  &:nth-child(1) { animation-delay: 0.08s; }
+  &:nth-child(2) { animation-delay: 0.16s; }
+  &:nth-child(3) { animation-delay: 0.24s; }
+  &:nth-child(4) { animation-delay: 0.32s; }
+  &:nth-child(5) { animation-delay: 0.40s; }
+  &:nth-child(n+6) { animation-delay: 0.48s; }
 }
 
+// Tarjetas del historial pasado
+.past-card {
+  opacity: 0 !important; // override para que la animación funcione igual
+  animation: fadeSlideUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  background-color: #fafafa !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+
+  &::before { background: rgba($text-soft, 0.25); }
+
+  // Al terminar la animación, se queda con 60% de opacidad
+  &.anim-done { opacity: 0.6 !important; }
+
+  // Truco CSS: animación que acaba en 0.62 de opacidad
+  @keyframes fadeSlideUpPast {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 0.62; transform: translateY(0); }
+  }
+  animation: fadeSlideUpPast 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  box-shadow: none !important;
+
+  &:hover { transform: none; box-shadow: none !important; }
+}
+
+// ── Cabecera de la tarjeta ────────────────────────────────────────────────────
 .appt-header {
   display: flex;
   justify-content: space-between;
@@ -55,69 +222,72 @@
   margin-bottom: 12px;
 
   .appt-date {
+    font-family: 'Cormorant Garamond', serif;
     font-weight: 600;
-    font-size: 16px;
-    color: #333;
+    font-size: 18px;
+    color: $text;
     text-transform: capitalize;
+    letter-spacing: 0.3px;
   }
 
   .appt-status {
-    font-size: 12px;
-    font-weight: 600;
-    padding: 4px 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 12px;
     border-radius: 20px;
     text-transform: uppercase;
-    
+    letter-spacing: 1px;
+
     &.pending {
-      background-color: #fff3cd;
-      color: #856404;
+      background: rgba(#c9a54b, 0.12);
+      color: color.adjust(#c9a54b, $lightness: -15%);
+      border: 1px solid rgba(#c9a54b, 0.25);
     }
     &.confirmed {
-      background-color: #d4edda;
-      color: #155724;
+      background: rgba(#2e7d32, 0.08);
+      color: #2e7d32;
+      border: 1px solid rgba(#2e7d32, 0.2);
     }
     &.cancelled {
-      background-color: #f8d7da;
-      color: #721c24;
+      background: rgba(#c62828, 0.07);
+      color: #c62828;
+      border: 1px solid rgba(#c62828, 0.18);
     }
   }
 }
 
+// ── Cuerpo de la tarjeta ──────────────────────────────────────────────────────
 .appt-body {
   display: flex;
   justify-content: space-between;
-  margin-top: 12px;
+  margin-top: 14px;
 
   .appt-detail {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #555;
-    font-size: 15px;
+    color: $text-soft;
+    font-size: 14px;
+    font-weight: 400;
 
     mat-icon {
-      color: #D4AF37;
-      font-size: 20px;
-      height: 20px;
-      width: 20px;
+      color: $gold;
+      font-size: 18px;
+      height: 18px;
+      width: 18px;
     }
   }
 }
 
-.section-title {
-  font-size: 18px;
-  color: #1a1a1a;
-  margin-bottom: 16px;
-  font-weight: 600;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 8px;
-}
+// ── Botón anular ──────────────────────────────────────────────────────────────
+// El botón warn de Material ya viene bien; solo suavizamos la transición
+mat-card-content button[color="warn"] {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 13px !important;
+  letter-spacing: 0.5px;
+  transition: all 0.25s ease !important;
+  border-radius: 8px !important;
 
-.past-card {
-  opacity: 0.65;
-  background-color: #fcfcfc;
-  
-  // Le quitamos la sombra para que parezca inactiva
-  box-shadow: none !important;
-  border: 1px solid #eee;
+  &:hover { background: rgba(#c62828, 0.06) !important; }
 }

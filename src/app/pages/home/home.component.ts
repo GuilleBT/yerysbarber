@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { AppointmentService, Appointment } from '../../shared/services/appointment.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-home',
@@ -180,11 +181,40 @@ export class HomeComponent implements OnInit {
 
     try {
       await this.appointmentService.createAppointment(newAppointment);
-      alert('¡Cita confirmada con éxito!');
+      
+      // EL SWEETALERT PREMIUM Y SERIO
+      Swal.fire({
+        title: 'Reserva Registrada',
+        html: `
+          <div style="text-align: center; margin-top: 10px;">
+            <p style="color: #666; font-size: 16px; margin-bottom: 5px;">Tu solicitud para el <strong>${this.datePipe.transform(this.selectedDate, 'dd/MM/yyyy')}</strong> a las <strong>${this.selectedSlot}</strong> ha sido enviada.</p>
+            <hr style="border: 1px solid rgba(212, 175, 55, 0.2); margin: 15px 0;">
+            <p style="font-size: 14px; margin: 5px 0;">Yeray revisará y confirmará tu cita en breve.</p>
+          </div>
+        `,
+        icon: 'success',
+        iconColor: '#D4AF37', // Icono en dorado corporativo
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#1a1a1a', // Botón negro premium
+        background: '#ffffff',
+        backdrop: `rgba(0,0,0,0.6)`,
+        customClass: {
+          title: 'swal-title-gold'
+        }
+      });
+
+      // Limpiamos la selección
       this.selectedDate = null;
       this.selectedSlot = null;
+      this.occupiedSlots = [];
+      this.availableSlots = [];
     } catch (error) {
-      alert('Hubo un error al guardar la cita. Inténtalo de nuevo.');
+      Swal.fire({
+        title: 'Error de conexión',
+        text: 'Hubo un problema al procesar tu reserva. Inténtalo de nuevo.',
+        icon: 'error',
+        confirmButtonColor: '#1a1a1a'
+      });
     }
   }
 }

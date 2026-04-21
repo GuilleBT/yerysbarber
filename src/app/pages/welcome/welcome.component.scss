@@ -1,40 +1,69 @@
 @use "sass:color";
-// Importar tipografías elegantes
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;500&display=swap');
 
-// Variables
-$primary-gold: #c9a54b;
+// ── Variables ───────────────────────────────────────────────────────────────
+$primary-gold:       #c9a54b;
 $primary-gold-light: #e5c27e;
-$text-dark: #1e1e1e;
-$text-soft: #5a5a5a;
-$white: #ffffff;
-$gray-bg: #fcf9f5;
-$shadow-elegant: 0 20px 40px rgba(0, 0, 0, 0.03);
+$text-dark:          #1e1e1e;
+$text-soft:          #5a5a5a;
+$white:              #ffffff;
+$gray-bg:            #fcf9f5;
 
+// ── Keyframes ───────────────────────────────────────────────────────────────
+
+// Logo: escala + ligera rotación → "aparece girando"
+@keyframes logoEntrance {
+  0%   { opacity: 0; transform: scale(0.65) rotate(-8deg); }
+  55%  { transform: scale(1.06) rotate(2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+// Halo dorado que pulsa bajo el logo
+@keyframes haloPulse {
+  0%, 100% { box-shadow: 0 15px 35px rgba($primary-gold, 0.15); }
+  50%       { box-shadow: 0 15px 40px rgba($primary-gold, 0.30); }
+}
+
+// Slide-up genérico (título, subtítulo, botones)
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// Brillo que cruza el título una sola vez
+@keyframes textShine {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+// Separador dorado que se expande desde el centro
+@keyframes lineExpand {
+  from { width: 0; opacity: 0; }
+  to   { width: 48px; opacity: 1; }
+}
+
+// ── Contenedor principal ─────────────────────────────────────────────────────
 .welcome-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between; // Cambiado a space-between para mejor distribución
+  justify-content: space-between;
   min-height: calc(100vh - 60px);
   padding: 40px 20px 30px;
   background: $gray-bg;
   position: relative;
   box-sizing: border-box;
-  
+
   @media (min-width: 768px) {
     min-height: calc(100vh - 70px);
     padding: 60px 40px 40px;
   }
-  
-  // Patrón de rayas de barbero muy sutil
+
+  // Patrón de fondo sutil (sin cambios)
   &::before {
     content: '';
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background-image: repeating-linear-gradient(
       45deg,
       rgba($primary-gold, 0.02) 0px,
@@ -45,24 +74,21 @@ $shadow-elegant: 0 20px 40px rgba(0, 0, 0, 0.03);
     pointer-events: none;
     z-index: 0;
   }
-  
-  > * {
-    position: relative;
-    z-index: 1;
-  }
+
+  > * { position: relative; z-index: 1; }
 }
 
+// ── Branding ─────────────────────────────────────────────────────────────────
 .branding {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  margin-top: 10vh; // Espacio superior elegante
-  
-  @media (min-width: 768px) {
-    margin-top: 12vh;
-  }
-  
+  margin-top: 10vh;
+
+  @media (min-width: 768px) { margin-top: 12vh; }
+
+  // — Logo —
   .brand-logo {
     width: 130px;
     height: 130px;
@@ -71,9 +97,14 @@ $shadow-elegant: 0 20px 40px rgba(0, 0, 0, 0.03);
     border-radius: 50%;
     background: $white;
     padding: 12px;
-    box-shadow: 0 15px 35px rgba($primary-gold, 0.15);
-    border: 1px solid rgba($primary-gold, 0.1);
-    
+    border: 1px solid rgba($primary-gold, 0.15);
+
+    // Animación de entrada
+    opacity: 0;
+    animation:
+      logoEntrance 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards,
+      haloPulse    3.5s ease-in-out                   1.2s infinite;
+
     @media (min-width: 768px) {
       width: 160px;
       height: 160px;
@@ -82,70 +113,102 @@ $shadow-elegant: 0 20px 40px rgba(0, 0, 0, 0.03);
     }
   }
 
+  // — Título —
   h1 {
-    font-family: 'Cormorant Garamond', serif; // Tipografía clásica y elegante
+    font-family: 'Cormorant Garamond', serif;
     font-size: 56px;
     font-weight: 700;
-    margin: 0 0 12px 0;
+    margin: 0 0 8px 0;
     color: $text-dark;
     letter-spacing: 1px;
     text-align: center;
     line-height: 1.1;
-    
+
+    // Brillo dorado al aparecer
+    background: linear-gradient(
+      90deg,
+      $text-dark 30%,
+      rgba($primary-gold, 0.9) 50%,
+      $text-dark 70%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+
+    // Entrada + efecto shine
+    opacity: 0;
+    animation:
+      fadeSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.45s forwards,
+      textShine   1.2s ease-in-out                   1.1s 1;
+
     @media (min-width: 768px) {
       font-size: 72px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       letter-spacing: 2px;
     }
-    
-    @media (max-width: 380px) {
-      font-size: 48px;
-    }
-    
-    // Efecto sutil de brillo dorado
-    text-shadow: 0 2px 10px rgba($primary-gold, 0.1);
+
+    @media (max-width: 380px) { font-size: 48px; }
   }
 
+  // — Separador dorado decorativo —
+  &::after {
+    content: '';
+    display: block;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, $primary-gold, transparent);
+    margin: 12px 0 14px;
+
+    width: 0;
+    opacity: 0;
+    animation: lineExpand 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.9s forwards;
+  }
+
+  // — Subtítulo —
   p {
-    font-family: 'Montserrat', sans-serif; // Sans-serif elegante para contraste
-    font-size: 18px;
-    font-weight: 300;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
     color: $text-soft;
     text-align: center;
     margin: 0;
     padding: 0 24px;
-    letter-spacing: 2px;
+    letter-spacing: 4px;
     text-transform: uppercase;
     word-break: break-word;
     max-width: 400px;
-    
+
+    opacity: 0;
+    animation: fadeSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.0s forwards;
+
     @media (min-width: 768px) {
-      font-size: 20px;
-      letter-spacing: 3px;
+      font-size: 14px;
+      letter-spacing: 5px;
       max-width: 500px;
     }
-    
+
     @media (max-width: 380px) {
-      font-size: 16px;
-      letter-spacing: 1.5px;
+      font-size: 11px;
+      letter-spacing: 3px;
     }
   }
 }
 
+// ── Botones ───────────────────────────────────────────────────────────────────
 .actions {
   display: flex;
   flex-direction: column;
   gap: 16px;
   width: 100%;
   max-width: 320px;
-  margin-bottom: 8vh; // Espacio inferior equilibrado
-  
+  margin-bottom: 8vh;
+
   @media (min-width: 768px) {
     max-width: 360px;
     gap: 20px;
     margin-bottom: 10vh;
   }
-  
+
   @media (max-width: 380px) {
     max-width: 280px;
     gap: 14px;
@@ -154,103 +217,109 @@ $shadow-elegant: 0 20px 40px rgba(0, 0, 0, 0.03);
   button {
     height: 60px;
     font-family: 'Montserrat', sans-serif;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 500;
-    letter-spacing: 2px;
+    letter-spacing: 2.5px;
     text-transform: uppercase;
-    border-radius: 30px; // Bordes más redondeados y elegantes
-    transition: all 0.3s ease;
+    border-radius: 30px;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
     width: 100%;
     padding: 0 24px;
-    
+
+    // Entrada escalonada: primero el principal, luego el secundario
+    opacity: 0;
+    &:first-child { animation: fadeSlideUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) 1.15s forwards; }
+    &:last-child  { animation: fadeSlideUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) 1.30s forwards; }
+
     @media (min-width: 768px) {
       height: 65px;
-      font-size: 17px;
-      letter-spacing: 2.5px;
+      font-size: 16px;
     }
-    
+
     mat-icon {
       font-size: 22px;
       width: 22px;
       height: 22px;
-      transition: transform 0.3s ease;
-      
-      @media (min-width: 768px) {
-        font-size: 24px;
-        width: 24px;
-        height: 24px;
-      }
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    
-    &:hover {
-      mat-icon {
-        transform: translateX(3px);
-      }
-    }
-    
-    &:active {
-      transform: scale(0.98);
-    }
+
+    &:active { transform: scale(0.97); }
   }
 
+  // — Botón dorado principal —
   .btn-gold {
-    background: linear-gradient(135deg, $primary-gold, color.adjust($primary-gold, $lightness: -5%));
+    background: linear-gradient(
+      135deg,
+      $primary-gold,
+      color.adjust($primary-gold, $lightness: -6%)
+    );
     color: $white !important;
     border: none !important;
-    box-shadow: 0 10px 25px rgba($primary-gold, 0.25);
-    
-    &:hover {
-      box-shadow: 0 15px 30px rgba($primary-gold, 0.35) !important;
-      transform: translateY(-2px);
-      
-      mat-icon {
-        transform: rotate(5deg) scale(1.1);
-      }
+    box-shadow: 0 8px 24px rgba($primary-gold, 0.28);
+    position: relative;
+    overflow: hidden;
+
+    // Brillo que recorre el botón al hacer hover
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        120deg,
+        transparent 30%,
+        rgba($white, 0.18) 50%,
+        transparent 70%
+      );
+      transform: translateX(-100%);
+      transition: transform 0.55s ease;
     }
-    
+
+    &:hover {
+      box-shadow: 0 14px 32px rgba($primary-gold, 0.38) !important;
+      transform: translateY(-3px);
+
+      &::after { transform: translateX(100%); }
+
+      mat-icon { transform: translateX(4px) scale(1.1); }
+    }
+
     &:active {
-      transform: translateY(0) scale(0.98);
-      box-shadow: 0 5px 15px rgba($primary-gold, 0.2) !important;
+      transform: translateY(0) scale(0.97);
+      box-shadow: 0 4px 12px rgba($primary-gold, 0.2) !important;
     }
   }
 
+  // — Botón outline secundario —
   .btn-outline {
     background: transparent !important;
-    border: 1.5px solid rgba($primary-gold, 0.3) !important;
+    border: 1.5px solid rgba($primary-gold, 0.35) !important;
     color: $text-dark !important;
-    
-    mat-icon {
-      color: $primary-gold;
-    }
-    
+
+    mat-icon { color: $primary-gold; }
+
     &:hover {
       border-color: $primary-gold !important;
-      background: rgba($primary-gold, 0.02) !important;
-      
-      mat-icon {
-        transform: translateX(5px);
-      }
+      background: rgba($primary-gold, 0.04) !important;
+
+      mat-icon { transform: translateX(5px); }
     }
-    
+
     &:active {
-      background: rgba($primary-gold, 0.05) !important;
+      background: rgba($primary-gold, 0.08) !important;
     }
   }
 }
 
-// Soporte para notch
+// ── Safe area (notch) ────────────────────────────────────────────────────────
 @supports (padding: max(0px)) {
   .welcome-container {
-    padding-left: max(20px, env(safe-area-inset-left));
+    padding-left:  max(20px, env(safe-area-inset-left));
     padding-right: max(20px, env(safe-area-inset-right));
   }
 }
 
-// Ajustes de seguridad
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }

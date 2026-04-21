@@ -39,7 +39,22 @@ export class AdminComponent implements OnInit {
   datosGrafica: any = null;
   opcionesGrafica: any = {
     responsive: true,
-    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    maintainAspectRatio: false,
+    scales: { 
+      y: { 
+        beginAtZero: true, 
+        ticks: { 
+          stepSize: 25 // Obliga a la gráfica a saltar de 25 en 25
+        } 
+      },
+      x: {
+        ticks: {
+          autoSkip: false, // Prohíbe que la gráfica oculte meses por falta de espacio
+          maxRotation: 45, // Inclina los textos un poco si la pantalla es estrecha
+          minRotation: 45
+        }
+      }
+    }
   };
 
   async ngOnInit() {

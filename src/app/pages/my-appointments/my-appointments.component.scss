@@ -193,25 +193,39 @@ $radius:     14px;
 
 // Tarjetas del historial pasado
 .past-card {
-  opacity: 0 !important; // override para que la animación funcione igual
-  animation: fadeSlideUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
   background-color: #fafafa !important;
   border: 1px solid rgba(0, 0, 0, 0.06) !important;
-
-  &::before { background: rgba($text-soft, 0.25); }
-
-  // Al terminar la animación, se queda con 60% de opacidad
-  &.anim-done { opacity: 0.6 !important; }
-
-  // Truco CSS: animación que acaba en 0.62 de opacidad
-  @keyframes fadeSlideUpPast {
-    from { opacity: 0; transform: translateY(28px); }
-    to   { opacity: 0.62; transform: translateY(0); }
-  }
-  animation: fadeSlideUpPast 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
   box-shadow: none !important;
 
-  &:hover { transform: none; box-shadow: none !important; }
+  &::before { 
+    background: rgba($text-soft, 0.25); 
+  }
+
+  // Animación específica para past-card
+  animation: fadeSlideUpPast 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+
+  &:hover { 
+    transform: none; 
+    box-shadow: none !important; 
+  }
+
+  // Contenido ligeramente atenuado pero legible
+  .appt-header .appt-date,
+  .appt-body .appt-detail {
+    opacity: 0.75;
+  }
+}
+
+// Keyframes para la animación de tarjetas pasadas
+@keyframes fadeSlideUpPast {
+  from { 
+    opacity: 0; 
+    transform: translateY(28px); 
+  }
+  to { 
+    opacity: 0.85;  // Aumentado de 0.62 a 0.85 para mejor legibilidad
+    transform: translateY(0); 
+  }
 }
 
 // ── Cabecera de la tarjeta ────────────────────────────────────────────────────

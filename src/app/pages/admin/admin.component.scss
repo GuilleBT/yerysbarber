@@ -183,3 +183,115 @@
 mat-calendar {
   width: 100% !important;
 }
+/* ========================================= */
+/* ANIMACIONES PREMIUM - EFECTO CASCADA      */
+/* ========================================= */
+
+/* 1. El motor del movimiento (Deslizamiento y opacidad) */
+@keyframes slideUpFade {
+  0% { 
+    opacity: 0; 
+    transform: translateY(40px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* 2. Enganchamos la animación a tus tarjetas existentes */
+.agenda-card {
+  /* Ocultamos la tarjeta inicialmente para que no parpadee antes de animarse */
+  opacity: 0; 
+  /* forwards mantiene el estado final (100%) al terminar la animación */
+  animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+}
+
+/* 3. La magia del retraso escalonado (Cascade) */
+/* Retrasamos la entrada dependiendo de la posición de la tarjeta en la lista */
+mat-card.agenda-card:nth-child(1) { animation-delay: 0.1s; }
+mat-card.agenda-card:nth-child(2) { animation-delay: 0.2s; }
+mat-card.agenda-card:nth-child(3) { animation-delay: 0.3s; }
+mat-card.agenda-card:nth-child(4) { animation-delay: 0.4s; }
+mat-card.agenda-card:nth-child(5) { animation-delay: 0.5s; }
+/* Si Yeray tiene un día a tope con 6 o más citas, las demás entran juntas para no aburrir */
+mat-card.agenda-card:nth-child(n+6) { animation-delay: 0.6s; } 
+
+/* 4. Transición extra: cuando despliega la gráfica */
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.grafica-container {
+  animation: fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+/* ========================================= */
+/* ANIMACIONES TOP PARA EL BLOQUE DE CORTES  */
+/* ========================================= */
+
+/* 1. Entrada de la tarjeta con efecto "Shine" (Brillo) */
+@keyframes cardEntrance {
+  0% { opacity: 0; transform: scale(0.95) translateY(-20px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes shineEffect {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.stats-card {
+  /* Tu estilo base se mantiene, añadimos estas animaciones */
+  animation: cardEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  
+  /* Efecto de brillo metálico que cruza la tarjeta una sola vez al cargar */
+  background: linear-gradient(110deg, #1a1a1a 45%, #333 50%, #1a1a1a 55%);
+  background-size: 200% 100%;
+  animation: cardEntrance 0.8s ease-out, shineEffect 2s 0.8s ease-in-out;
+}
+
+/* 2. El contador: Revelación y Pulso */
+@keyframes numberReveal {
+  0% { filter: blur(10px); opacity: 0; transform: scale(0.5); }
+  100% { filter: blur(0); opacity: 1; transform: scale(1); }
+}
+
+.stats-info .counter {
+  display: inline-block;
+  /* El número aparece después de que la tarjeta se asienta */
+  animation: numberReveal 1s 0.5s cubic-bezier(0.16, 1, 0.3, 1) both, 
+             goldPulse 3s 1.5s infinite ease-in-out;
+}
+
+/* 3. El Botón: Efecto de "atención" sutil */
+.btn-premium-gold {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  
+  &:hover {
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.4) !important;
+    transform: translateY(-3px) scale(1.02) !important;
+  }
+}
+
+/* 4. Despliegue de la Gráfica: Efecto Elástico (Abre y Cierra) */
+.grafica-container {
+  overflow: hidden;
+  /* Esta animación hace que el panel parezca de goma al abrirse */
+  animation: elasticExpand 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+}
+
+@keyframes elasticExpand {
+  0% { 
+    opacity: 0; 
+    max-height: 0; 
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  100% { 
+    opacity: 1; 
+    max-height: 600px; /* Ajusta según el tamaño de tu gráfica */
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+}

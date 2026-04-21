@@ -12,13 +12,65 @@
   margin-bottom: 32px;
   box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
 
-  .stats-content {
-    display: flex;
-    align-items: center;
-    padding: 24px;
-    gap: 20px;
+  /* La estructura de la tarjeta para móvil */
+.stats-content {
+  display: flex;
+  flex-wrap: wrap; /* LA MAGIA: Si no cabe en móvil, baja de línea */
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  gap: 20px;
+}
+
+/* Agrupa el icono y el número */
+.stats-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ... Mantén tus estilos de .stats-icon y .stats-info exactamente igual ... */
+
+/* El Botón Premium Ajustado */
+.btn-premium-gold {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: transparent;
+  color: #D4AF37;
+  border: 2px solid #D4AF37;
+  border-radius: 30px;
+  padding: 8px 20px; /* Un poco más compacto para móvil */
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 0; /* Quitamos el auto para que no rompa el diseño en móvil */
+  width: 100%; /* En móviles pequeños ocupa todo el ancho */
+  justify-content: center; /* Centra el texto del botón */
+
+  @media (min-width: 480px) {
+    width: auto; /* En pantallas más grandes se adapta a su texto */
   }
 
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &:hover, &:active {
+    background-color: #D4AF37;
+    color: #1a1a1a;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+    transform: translateY(-2px);
+  }
+}
   .stats-icon {
     font-size: 48px;
     height: 48px;

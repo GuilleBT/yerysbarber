@@ -7,14 +7,18 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { AppointmentService, Appointment } from '../../shared/services/appointment.service';
-import { AuthService } from '../../shared/services/auth.service'; // <-- IMPORT VITAL DEL SERVICIO
+import { AuthService } from '../../shared/services/auth.service';
+import { BaseChartDirective } from 'ng2-charts';
+
+// IMPORTACIONES VITALES PARA LEER FIREBASE DIRECTAMENTE AQUÍ
+import { Firestore, collection, query, where, getDocs } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
   imports: [
     CommonModule, MatCardModule, MatIconModule, MatButtonModule, 
-    MatDividerModule, MatDatepickerModule, MatNativeDateModule
+    MatDividerModule, MatDatepickerModule, MatNativeDateModule, BaseChartDirective
   ],
   providers: [DatePipe],
   templateUrl: './admin.component.html',
@@ -23,20 +27,27 @@ import { AuthService } from '../../shared/services/auth.service'; // <-- IMPORT 
 export class AdminComponent implements OnInit {
   private appointmentService = inject(AppointmentService);
   private datePipe = inject(DatePipe);
-  private authService = inject(AuthService); // <-- INYECCIÓN CORRECTA
+  private authService = inject(AuthService);
+  private firestore = inject(Firestore); // <--- INYECCIÓN DE FIRESTORE AÑADIDA
 
   totalCuts: number = 0;
   selectedDate: Date = new Date();
   dailyAppointments: Appointment[] = [];
   pendingRequests: Appointment[] = []; 
 
+  mostrarGrafica = false;
+  datosGrafica: any = null;
+  opcionesGrafica: any = {
+    responsive: true,
+    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+  };
+
   async ngOnInit() {
     this.totalCuts = await this.appointmentService.getTotalCompletedCuts();
     this.pendingRequests = await this.appointmentService.getAllPendingAppointments(); 
+    this.cargarEstadisticas();
     
-    // Buscamos teléfonos de las pendientes
     await this.loadPhoneNumbers(this.pendingRequests);
-    
     await this.onDateSelected(this.selectedDate);
   }
 
@@ -47,12 +58,9 @@ export class AdminComponent implements OnInit {
     const agenda = await this.appointmentService.getDailyAgenda(dateString);
     
     this.dailyAppointments = agenda.filter(a => a.status === 'confirmed' || a.status === 'completed');
-    
-    // Buscamos teléfonos de las citas del día
     await this.loadPhoneNumbers(this.dailyAppointments);
   }
 
-  // Carga los teléfonos desde la base de datos de perfiles
   async loadPhoneNumbers(appointments: Appointment[]) {
     for (let appt of appointments) {
       try {
@@ -68,7 +76,6 @@ export class AdminComponent implements OnInit {
     }
   }
 
-  // Gestiona el ciclo de vida de la cita
   async changeStatus(id: string | undefined, newStatus: 'confirmed' | 'cancelled' | 'completed') {
     if (!id) return;
     
@@ -107,10 +114,28 @@ export class AdminComponent implements OnInit {
         }
       }
 
-      if (newStatus === 'completed') this.totalCuts++; 
+      if (newStatus === 'completed') {
+        this.totalCuts++; 
+        this.cargarEstadisticas(); // Recarga la gráfica automáticamente si termina un corte
+      }
       
     } catch (error) {
       alert('Error al actualizar la cita.');
     }
+  }
+
+  async cargarEstadisticas() {
+    const citasRef = collection(this.firestore, 'appointments');
+    const q = query(citasRef, where('status', '==', 'completed'));
+    const querySnapshot = await getDocs(q);
+    
+    // Tipado estricto (doc: any) para que el compilador no salte
+    const citasCompletadas = querySnapshot.docs.map((doc: any) => doc.data() as Appointment);
+
+    this.datosGrafica = this.appointmentService.obtenerEstadisticasMensuales(citasCompletadas);
+  }
+
+  toggleGrafica() {
+    this.mostrarGrafica = !this.mostrarGrafica;
   }
 }

@@ -68,7 +68,6 @@ $radius:      16px;
 
   animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
 
-  // Franja dorada superior como "cabecera de marca"
   &::before {
     content: '';
     display: block;
@@ -76,24 +75,55 @@ $radius:      16px;
     background: linear-gradient(90deg, $dark, $gold, $dark);
   }
 
-  // Estilo del calendario de Material: títulos y fechas
   ::ng-deep {
-    .mat-calendar-header { background: $dark; padding: 8px 0; }
+    .mat-calendar-header {
+      background: $dark;
+      padding: 12px 0 8px 0; // más espacio arriba para separar del borde negro
+    }
+
+    // Días de la semana (L M X J V S D)
+    .mat-calendar-table-header th {
+      color: rgba($gold, 0.9) !important;
+      font-weight: 500;
+      font-size: 0.85rem;
+      letter-spacing: 0.3px;
+      padding: 8px 0 4px 0 !important; // separa del contenido y del header
+      border-bottom: 1px solid rgba($gold, 0.2);
+    }
+
     .mat-calendar-period-button .mdc-button__label,
-    .mat-calendar-arrow { color: $gold !important; fill: $gold !important; }
+    .mat-calendar-arrow {
+      color: $gold !important;
+      fill: $gold !important;
+    }
+
     .mat-calendar-previous-button,
-    .mat-calendar-next-button { color: $gold !important; }
+    .mat-calendar-next-button {
+      color: $gold !important;
+    }
+
     .mat-calendar-body-selected {
       background-color: $gold !important;
       color: $dark !important;
       font-weight: 700;
     }
+
     .mat-calendar-body-today:not(.mat-calendar-body-selected) {
       border-color: $gold !important;
     }
+
     .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover
       .mat-calendar-body-cell-content:not(.mat-calendar-body-selected) {
       background-color: rgba($gold, 0.12);
+    }
+
+    // Ajuste fino para que las celdas no se vean pegadas
+    .mat-calendar-table {
+      border-spacing: 2px 4px !important;
+    }
+
+    .mat-calendar-body-cell {
+      padding: 2px 0 !important;
     }
   }
 }

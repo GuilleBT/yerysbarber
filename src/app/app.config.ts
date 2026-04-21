@@ -9,6 +9,8 @@ import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { MAT_DATE_LOCALE } from '@angular/material/core';
 import { provideServiceWorker } from '@angular/service-worker';
+import { provideAnalytics, getAnalytics, ScreenTrackingService, UserTrackingService } from '@angular/fire/analytics'; 
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts'; 
 
 registerLocaleData(localeEs, 'es');
 
@@ -23,6 +25,10 @@ export const appConfig: ApplicationConfig = {
     provideFirestore(() => getFirestore()), provideServiceWorker('ngsw-worker.js', {
             enabled: !isDevMode(),
             registrationStrategy: 'registerWhenStable:30000'
-          })
+          }),
+  provideAnalytics(() => getAnalytics()), 
+    ScreenTrackingService, 
+    UserTrackingService,  
+  provideCharts(withDefaultRegisterables()),
   ]
 };

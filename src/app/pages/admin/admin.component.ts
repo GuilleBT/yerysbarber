@@ -9,7 +9,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { AppointmentService, Appointment } from '../../shared/services/appointment.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { BaseChartDirective } from 'ng2-charts';
-
+import { environment } from '../../../environments/environment';
 // IMPORTACIONES VITALES PARA LEER FIREBASE DIRECTAMENTE AQUÍ
 import { Firestore, collection, query, where, getDocs } from '@angular/fire/firestore';
 

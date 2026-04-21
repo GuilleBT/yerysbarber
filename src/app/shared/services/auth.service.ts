@@ -13,7 +13,7 @@ export class AuthService {
   // ==========================================================
   // LA ÚNICA FUENTE DE LA VERDAD PARA EL CORREO DEL ADMINISTRADOR
   // ==========================================================
-  public readonly ADMIN_EMAIL = 'guillermobeltrantabares@gmail.com';
+  public readonly ADMIN_EMAIL = 'yeraygarcia431@gmail.com';
 
   public user$ = authState(this.auth);
 

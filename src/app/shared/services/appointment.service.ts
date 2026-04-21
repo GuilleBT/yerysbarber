@@ -207,6 +207,30 @@ export class AppointmentService {
       throw error;
     }
   }
+// ---------------------------------------------------------
+  // ESTADÍSTICAS PARA EL PANEL DE CONTROL
+  // ---------------------------------------------------------
+  obtenerEstadisticasMensuales(citas: Appointment[]) {
+    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const contadorPorMes = new Array(12).fill(0);
+
+    citas.forEach(cita => {
+      // Como date es un string "YYYY-MM-DD", lo convertimos a fecha real de JS
+      const fecha = new Date(cita.date); 
+      const mesIndex = fecha.getMonth();
+      contadorPorMes[mesIndex]++;
+    });
+
+    return {
+      labels: meses,
+      datasets: [{
+        data: contadorPorMes,
+        label: 'Cortes completados',
+        backgroundColor: '#D4AF37', // El dorado de Yeray
+        borderRadius: 6 // Diseño moderno
+      }]
+    };
+  }
 
   // ---------------------------------------------------------
   // EL MOTOR DE TELEGRAM

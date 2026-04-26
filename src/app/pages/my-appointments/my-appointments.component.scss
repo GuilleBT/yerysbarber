@@ -305,3 +305,20 @@ mat-card-content button[color="warn"] {
 
   &:hover { background: rgba(#c62828, 0.06) !important; }
 }
+/* ========================================= */
+/* LIMPIEZA NUMÉRICA EN HISTORIAL            */
+/* ========================================= */
+
+/* Aplicamos a la fecha y a los detalles de hora */
+.appt-date,
+.appt-detail span {
+  font-family: 'Roboto', 'Helvetica Neue', sans-serif !important;
+  font-variant-numeric: tabular-nums lining-nums !important;
+  letter-spacing: 0.3px;
+}
+
+.appt-date {
+  font-weight: 700 !important;
+  /* Mantenemos un tamaño equilibrado para que no choque con la fuente elegante */
+  font-size: 15px !important; 
+}

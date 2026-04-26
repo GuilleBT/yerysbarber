@@ -389,3 +389,21 @@ $radius:     14px;
 }
 
 mat-calendar { width: 100% !important; }
+/* ========================================= */
+/* CORRECCIÓN TIPOGRÁFICA PARA NÚMEROS       */
+/* ========================================= */
+
+/* Aplicamos una fuente limpia a las horas, fechas y teléfonos */
+.agenda-header .time,
+.client-info .client-phone {
+  /* Forzamos una fuente de sistema geométrica y clara */
+  font-family: 'Roboto', 'Helvetica Neue', 'Segoe UI', sans-serif !important;
+  
+  /* Truco PRO: Esto obliga a que todos los números ocupen el mismo ancho exacto 
+     y se alineen perfectamente en la misma línea base */
+  font-variant-numeric: tabular-nums lining-nums !important;
+  
+  /* Ajuste fino del grosor para que no compita con el nombre */
+  font-weight: 500 !important;
+  letter-spacing: 0.5px;
+}

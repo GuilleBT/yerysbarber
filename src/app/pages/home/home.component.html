@@ -18,8 +18,13 @@
   </mat-card> @if (selectedDate) {
     <div class="slots-container">
       <div class="selection-info">
-        <h3>Día: {{ selectedDate | date:'fullDate' }}</h3>
-      </div>
+  <h3 class="texto-elegante">
+    Día: {{ selectedDate | date:'EEEE' }}, 
+    <span class="numeros-normales">{{ selectedDate | date:'d' }}</span> 
+    de {{ selectedDate | date:'MMMM' }} 
+    de <span class="numeros-normales">{{ selectedDate | date:'yyyy' }}</span>
+  </h3>
+</div>
 
       <div class="slots-grid">
         @for (slot of availableSlots; track slot) {

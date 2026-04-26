@@ -284,3 +284,40 @@ $radius:      16px;
   color: $dark !important;
   font-weight: 700 !important;
 }
+/* ========================================= */
+/* LIMPIEZA NUMÉRICA EN RESERVAS             */
+/* ========================================= */
+
+/* 1. Los números dentro del calendario */
+::ng-deep .mat-calendar-body-cell-content {
+  font-family: 'Roboto', sans-serif !important;
+  font-variant-numeric: lining-nums !important;
+  font-weight: 500 !important;
+}
+
+/* 2. Los botones de las horas (slots) */
+.slots-grid button {
+  font-family: 'Roboto', sans-serif !important;
+  font-variant-numeric: tabular-nums lining-nums !important;
+  font-size: 15px !important;
+  letter-spacing: 0.5px;
+}
+
+/* ========================================= */
+/* TIPOGRAFÍA MIXTA PARA LA FECHA            */
+/* ========================================= */
+
+.texto-elegante {
+  /* OJO: Cambia 'Playfair Display' por el nombre exacto de la fuente elegante que uses en tu proyecto */
+  font-family: 'Playfair Display', serif !important; 
+  font-size: 20px;
+  color: #1a1a1a;
+}
+
+.numeros-normales {
+  /* Forzamos la fuente moderna y geométrica solo para los días y el año */
+  font-family: 'Roboto', 'Helvetica Neue', sans-serif !important;
+  font-variant-numeric: tabular-nums lining-nums !important;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}

@@ -1,7 +1,6 @@
 @use "sass:color";
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap');
 
-// ── Variables (mismo sistema que welcome) ───────────────────────────────────
 $gold:        #c9a54b;
 $gold-light:  #e5c27e;
 $gold-glow:   rgba(#c9a54b, 0.3);
@@ -14,8 +13,6 @@ $card-bg:     #ffffff;
 $border:      rgba(#c9a54b, 0.18);
 $radius:      16px;
 
-// ── Keyframes ───────────────────────────────────────────────────────────────
-
 @keyframes fadeSlideUp {
   from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -26,7 +23,6 @@ $radius:      16px;
   to   { opacity: 1; }
 }
 
-// Slots aparecen en cascada
 @keyframes slotPop {
   0%   { opacity: 0; transform: scale(0.82); }
   65%  { transform: scale(1.04); }
@@ -42,7 +38,11 @@ $radius:      16px;
   to { transform: rotate(360deg); }
 }
 
-// ── Layout principal ─────────────────────────────────────────────────────────
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .calendar-container {
   display: flex;
   flex-direction: column;
@@ -52,11 +52,9 @@ $radius:      16px;
   background: $gray-bg;
   min-height: calc(100vh - 60px);
   font-family: 'Montserrat', sans-serif;
-
   animation: fadeIn 0.5s ease both;
 }
 
-// ── Tarjeta del calendario ───────────────────────────────────────────────────
 .calendar-card {
   width: 100%;
   max-width: 360px;
@@ -65,7 +63,6 @@ $radius:      16px;
   border: 1px solid $border !important;
   overflow: hidden;
   background: $card-bg !important;
-
   animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
 
   &::before {
@@ -78,16 +75,15 @@ $radius:      16px;
   ::ng-deep {
     .mat-calendar-header {
       background: $dark;
-      padding: 12px 0 8px 0; // más espacio arriba para separar del borde negro
+      padding: 12px 0 8px 0; 
     }
 
-    // Días de la semana (L M X J V S D)
     .mat-calendar-table-header th {
       color: rgba($gold, 0.9) !important;
       font-weight: 500;
       font-size: 0.85rem;
       letter-spacing: 0.3px;
-      padding: 8px 0 4px 0 !important; // separa del contenido y del header
+      padding: 8px 0 4px 0 !important; 
       border-bottom: 1px solid rgba($gold, 0.2);
     }
 
@@ -117,7 +113,6 @@ $radius:      16px;
       background-color: rgba($gold, 0.12);
     }
 
-    // Ajuste fino para que las celdas no se vean pegadas
     .mat-calendar-table {
       border-spacing: 2px 4px !important;
     }
@@ -128,7 +123,6 @@ $radius:      16px;
   }
 }
 
-// ── Panel de horas ────────────────────────────────────────────────────────────
 .slots-container {
   width: 100%;
   max-width: 360px;
@@ -147,7 +141,6 @@ $radius:      16px;
     margin: 0;
     letter-spacing: 0.5px;
 
-    // Línea decorativa bajo la fecha
     &::after {
       content: '';
       display: block;
@@ -160,14 +153,12 @@ $radius:      16px;
   }
 }
 
-// ── Grid de slots ─────────────────────────────────────────────────────────────
 .slots-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   margin-bottom: 24px;
 
-  // Cada slot aparece en cascada
   button {
     font-family: 'Montserrat', sans-serif !important;
     font-size: 14px !important;
@@ -176,8 +167,6 @@ $radius:      16px;
     border-radius: 10px !important;
     transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
     letter-spacing: 0.5px;
-
-    // Animación escalonada por posición
     opacity: 0;
     animation: slotPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 
@@ -187,7 +176,6 @@ $radius:      16px;
       }
     }
 
-    // Estado normal: borde sutil dorado
     border-color: rgba($gold, 0.35) !important;
     color: $text !important;
 
@@ -202,7 +190,6 @@ $radius:      16px;
       transform: scale(0.95);
     }
 
-    // Slot seleccionado
     &[color="accent"],
     &.selected {
       background: $gold !important;
@@ -216,7 +203,6 @@ $radius:      16px;
       }
     }
 
-    // Slot ocupado/deshabilitado
     &[disabled] {
       opacity: 0.35 !important;
       text-decoration: line-through;
@@ -225,11 +211,35 @@ $radius:      16px;
   }
 }
 
-// ── Sección de confirmación ───────────────────────────────────────────────────
 .confirm-section {
   margin-top: 8px;
   padding-bottom: 40px;
   animation: fadeSlideUp 0.5s ease-out forwards;
+}
+
+.price-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: rgba($gold, 0.1);
+  color: #856404;
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 13px;
+  animation: fadeInUp 0.5s ease-out forwards;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: $gold;
+  }
+
+  strong {
+    font-weight: 700;
+  }
 }
 
 .btn-confirm {
@@ -241,18 +251,13 @@ $radius:      16px;
   letter-spacing: 1.5px !important;
   text-transform: uppercase !important;
   border-radius: 28px !important;
-
   background: linear-gradient(135deg, $gold, color.adjust($gold, $lightness: -6%)) !important;
   color: $dark !important;
-
   position: relative;
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-
-  // Pulso dorado llamativo pero elegante
   animation: pulseGold 2.5s 0.5s infinite;
 
-  // Efecto de brillo al hacer hover
   &::after {
     content: '';
     position: absolute;
@@ -279,23 +284,17 @@ $radius:      16px;
   }
 }
 
-// ── SweetAlert overrides ───────────────────────────────────────────────────
 ::ng-deep .swal-title-gold {
   color: $dark !important;
   font-weight: 700 !important;
 }
-/* ========================================= */
-/* LIMPIEZA NUMÉRICA EN RESERVAS             */
-/* ========================================= */
 
-/* 1. Los números dentro del calendario */
 ::ng-deep .mat-calendar-body-cell-content {
   font-family: 'Roboto', sans-serif !important;
   font-variant-numeric: lining-nums !important;
   font-weight: 500 !important;
 }
 
-/* 2. Los botones de las horas (slots) */
 .slots-grid button {
   font-family: 'Roboto', sans-serif !important;
   font-variant-numeric: tabular-nums lining-nums !important;
@@ -303,19 +302,13 @@ $radius:      16px;
   letter-spacing: 0.5px;
 }
 
-/* ========================================= */
-/* TIPOGRAFÍA MIXTA PARA LA FECHA            */
-/* ========================================= */
-
 .texto-elegante {
-  /* OJO: Cambia 'Playfair Display' por el nombre exacto de la fuente elegante que uses en tu proyecto */
   font-family: 'Playfair Display', serif !important; 
   font-size: 20px;
   color: #1a1a1a;
 }
 
 .numeros-normales {
-  /* Forzamos la fuente moderna y geométrica solo para los días y el año */
   font-family: 'Roboto', 'Helvetica Neue', sans-serif !important;
   font-variant-numeric: tabular-nums lining-nums !important;
   font-weight: 500;

@@ -40,6 +40,12 @@
 
       @if (selectedSlot) {
         <div id="confirm-zone" class="confirm-section">
+          
+          <div class="price-notice">
+            <mat-icon>info_outline</mat-icon>
+            <span>Recuerda: El corte son <strong>7€</strong> a partir del 1 de junio.</span>
+          </div>
+
           <button mat-raised-button class="btn-confirm" (click)="confirmAppointment()">
             Confirmar cita: {{ selectedSlot }}
           </button>

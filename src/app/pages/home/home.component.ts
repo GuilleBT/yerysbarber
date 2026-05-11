@@ -24,7 +24,6 @@ export class HomeComponent implements OnInit {
   private datePipe = inject(DatePipe);
   private router = inject(Router);
 
-  // --- VARIABLES DE LÍMITE DE FECHA ---
   minDate: Date = new Date(); 
   maxDate: Date = new Date(); 
 
@@ -41,27 +40,22 @@ export class HomeComponent implements OnInit {
   isCalendarReady: boolean = false;
 
   async ngOnInit() {
-    // 1. EL CANDADO DE LAS SEMANAS
     const hoy = new Date();
-    this.minDate = hoy; // No pueden reservar ayer
+    this.minDate = hoy; 
 
-    // ¿Cuántos días faltan para el domingo de esta semana?
-    const diaSemana = hoy.getDay(); // 0 es Domingo, 1 es Lunes, etc.
+    const diaSemana = hoy.getDay();
     const diasParaDomingo = diaSemana === 0 ? 0 : 7 - diaSemana;
 
-    // Límite: Sumamos los días hasta este domingo + 7 días de la semana que viene
     const limiteDate = new Date();
     limiteDate.setDate(hoy.getDate() + diasParaDomingo + 7);
     this.maxDate = limiteDate;
 
-    // 2. EL TRAMPOLÍN: Vigilamos quién entra
     this.authService.user$.subscribe(user => {
       if (user && user.email === this.authService.ADMIN_EMAIL) {
         this.router.navigate(['/admin']); 
       }
     });
 
-    // 3. CARGAMOS LOS AJUSTES DE YERAY
     const settings = await this.appointmentService.getBarbershopSettings();
     if (settings) {
       this.blockedDates = settings.blockedDates || [];
@@ -70,9 +64,37 @@ export class HomeComponent implements OnInit {
     }
 
     this.isCalendarReady = true;
+    this.mostrarAvisoPrecio();
   }
 
-  // EL FILTRO MÁGICO DEL CALENDARIO
+  mostrarAvisoPrecio() {
+    const avisoVisto = localStorage.getItem('avisoPrecio7Euros');
+    
+    if (!avisoVisto) {
+      Swal.fire({
+        title: 'Actualización de Tarifas',
+        html: `
+          <div style="text-align: center; margin-top: 10px;">
+            <p style="color: #666; font-size: 16px;">Para poder seguir ofreciéndote el mejor servicio, a partir del <strong>1 de junio</strong> el precio del corte pasará a ser de <strong>7€</strong>.</p>
+            <hr style="border: 1px solid rgba(212, 175, 55, 0.2); margin: 15px 0;">
+            <p style="font-size: 14px; margin: 5px 0;">¡Gracias por seguir confiando en Yeray! 💈</p>
+          </div>
+        `,
+        icon: 'info',
+        iconColor: '#D4AF37',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#1a1a1a',
+        background: '#ffffff',
+        backdrop: `rgba(0,0,0,0.6)`,
+        customClass: {
+          title: 'swal-title-gold'
+        }
+      }).then(() => {
+        localStorage.setItem('avisoPrecio7Euros', 'true');
+      });
+    }
+  }
+
   myDateFilter = (d: Date | null): boolean => {
     if (!d) return false;
     const dateString = this.datePipe.transform(d, 'yyyy-MM-dd') || '';
@@ -86,7 +108,6 @@ export class HomeComponent implements OnInit {
     return true;
   };
 
-  // CUANDO EL CLIENTE TOCA UN DÍA
   async onDateSelected(date: Date | null) {
     this.selectedDate = date;
     this.selectedSlot = null;
@@ -107,7 +128,6 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  // EL PORTERO DE DISCOTECA
   isSlotDisabled(slot: string): boolean {
     if (this.occupiedSlots.includes(slot)) return true;
 
@@ -141,7 +161,6 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  // BOTÓN FINAL DE RESERVA
   async confirmAppointment() { 
     if (!this.selectedDate || !this.selectedSlot) {
       alert('Por favor, selecciona un día y una hora primero.');
@@ -158,7 +177,6 @@ export class HomeComponent implements OnInit {
       return; 
     }
 
-    // EL ESCUDO ANTI-SPAM (Máximo 6 citas)
     const userHistory = await this.appointmentService.getUserAppointments(user.uid);
     const activeAppointments = userHistory.filter(appt => appt.status === 'pending' || appt.status === 'confirmed');
     
@@ -182,7 +200,6 @@ export class HomeComponent implements OnInit {
     try {
       await this.appointmentService.createAppointment(newAppointment);
       
-      // EL SWEETALERT PREMIUM Y SERIO
       Swal.fire({
         title: 'Reserva Registrada',
         html: `
@@ -193,9 +210,9 @@ export class HomeComponent implements OnInit {
           </div>
         `,
         icon: 'success',
-        iconColor: '#D4AF37', // Icono en dorado corporativo
+        iconColor: '#D4AF37',
         confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#1a1a1a', // Botón negro premium
+        confirmButtonColor: '#1a1a1a',
         background: '#ffffff',
         backdrop: `rgba(0,0,0,0.6)`,
         customClass: {
@@ -203,7 +220,6 @@ export class HomeComponent implements OnInit {
         }
       });
 
-      // Limpiamos la selección
       this.selectedDate = null;
       this.selectedSlot = null;
       this.occupiedSlots = [];

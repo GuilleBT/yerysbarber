@@ -94,7 +94,7 @@ export class AppointmentService {
   // ---------------------------------------------------------
   // FUNCIONES DEL ADMIN (YERAY)
   // ---------------------------------------------------------
-  async getDailyAgenda(date: string): Promise<Appointment[]> {
+async getDailyAgenda(date: string): Promise<Appointment[]> {
     try {
       const appointmentsRef = collection(this.firestore, 'appointments');
       const q = query(appointmentsRef, where('date', '==', date));
@@ -105,7 +105,12 @@ export class AppointmentService {
         ...doc.data()
       } as Appointment));
 
-      return appointments.sort((a, b) => a.time.localeCompare(b.time));
+      // ORDENACIÓN BLINDADA: Ignora las horas nulas
+      return appointments.sort((a, b) => {
+        const timeA = a.time || '';
+        const timeB = b.time || '';
+        return timeA.localeCompare(timeB);
+      });
     } catch (error) {
       console.error('Error al obtener la agenda:', error);
       return [];
@@ -144,7 +149,7 @@ export class AppointmentService {
     }
   }
 
-  async getAllPendingAppointments(): Promise<Appointment[]> {
+async getAllPendingAppointments(): Promise<Appointment[]> {
     try {
       const appointmentsRef = collection(this.firestore, 'appointments');
       const q = query(appointmentsRef, where('status', '==', 'pending'));
@@ -155,7 +160,14 @@ export class AppointmentService {
         ...doc.data()
       } as Appointment));
 
-      return appointments.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+      // ORDENACIÓN BLINDADA: Ignora fechas y horas nulas
+      return appointments.sort((a, b) => {
+        const dateA = a.date || '';
+        const dateB = b.date || '';
+        const timeA = a.time || '';
+        const timeB = b.time || '';
+        return dateA.localeCompare(dateB) || timeA.localeCompare(timeB);
+      });
     } catch (error) {
       console.error('Error al obtener pendientes:', error);
       return [];

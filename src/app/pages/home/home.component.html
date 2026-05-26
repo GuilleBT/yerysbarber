@@ -1,6 +1,6 @@
 <div class="calendar-container">
   
-  <mat-card class="calendar-card">
+  <mat-card class="calendar-card" [class.disabled-card]="isSaving">
     @if (isCalendarReady) {
       <mat-calendar 
       [(selected)]="selectedDate" 
@@ -15,23 +15,25 @@
         <p>Cargando disponibilidad de Yeray...</p>
       </div>
     }
-  </mat-card> @if (selectedDate) {
-    <div class="slots-container">
+  </mat-card> 
+  
+  @if (selectedDate) {
+    <div class="slots-container" [class.disabled-container]="isSaving">
       <div class="selection-info">
-  <h3 class="texto-elegante">
-    Día: {{ selectedDate | date:'EEEE' }}, 
-    <span class="numeros-normales">{{ selectedDate | date:'d' }}</span> 
-    de {{ selectedDate | date:'MMMM' }} 
-    de <span class="numeros-normales">{{ selectedDate | date:'yyyy' }}</span>
-  </h3>
-</div>
+        <h3 class="texto-elegante">
+          Día: {{ selectedDate | date:'EEEE' }}, 
+          <span class="numeros-normales">{{ selectedDate | date:'d' }}</span> 
+          de {{ selectedDate | date:'MMMM' }} 
+          de <span class="numeros-normales">{{ selectedDate | date:'yyyy' }}</span>
+        </h3>
+      </div>
 
       <div class="slots-grid">
         @for (slot of availableSlots; track slot) {
           <button 
             mat-stroked-button 
             [color]="selectedSlot === slot ? 'accent' : ''"
-            [disabled]="isSlotDisabled(slot)"
+            [disabled]="isSlotDisabled(slot) || isSaving"
             (click)="selectSlot(slot)">
             {{ slot }}
           </button>
@@ -46,8 +48,11 @@
             <span>Recuerda: El corte son <strong>7€</strong> a partir del 1 de junio.</span>
           </div>
 
-          <button mat-raised-button class="btn-confirm" (click)="confirmAppointment()">
-            Confirmar cita: {{ selectedSlot }}
+          <button mat-raised-button 
+                  class="btn-confirm" 
+                  [disabled]="!selectedSlot || isSaving"
+                  (click)="confirmAppointment()">
+            {{ isSaving ? 'Guardando cita...' : 'Confirmar cita: ' + selectedSlot }}
           </button>
         </div>
       }

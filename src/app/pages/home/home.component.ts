@@ -38,6 +38,7 @@ export class HomeComponent implements OnInit {
   blockedSlotsAdmin: any = {}; 
 
   isCalendarReady: boolean = false;
+  isSaving: boolean = false; // EL BLINDAJE CONTRA DOBLE CLIC
 
   async ngOnInit() {
     const hoy = new Date();
@@ -109,6 +110,8 @@ export class HomeComponent implements OnInit {
   };
 
   async onDateSelected(date: Date | null) {
+    if (this.isSaving) return; // Si está guardando, bloquea interacciones
+
     this.selectedDate = date;
     this.selectedSlot = null;
     this.occupiedSlots = [];
@@ -129,6 +132,7 @@ export class HomeComponent implements OnInit {
   }
 
   isSlotDisabled(slot: string): boolean {
+    if (this.isSaving) return true; // Deshabilita los botones al guardar
     if (this.occupiedSlots.includes(slot)) return true;
 
     if (this.selectedDate) {
@@ -152,6 +156,8 @@ export class HomeComponent implements OnInit {
   }
 
   selectSlot(slot: string) {
+    if (this.isSaving) return;
+
     if (!this.isSlotDisabled(slot)) {
       this.selectedSlot = slot;
       setTimeout(() => {
@@ -162,8 +168,14 @@ export class HomeComponent implements OnInit {
   }
 
   async confirmAppointment() { 
-    if (!this.selectedDate || !this.selectedSlot) {
-      alert('Por favor, selecciona un día y una hora primero.');
+    // VALIDACIÓN EXTREMA
+    if (!this.selectedDate || !this.selectedSlot || this.selectedSlot.trim() === '') {
+      Swal.fire({
+        title: 'Error de selección',
+        text: 'La hora seleccionada no es válida. Por favor, recarga la página y vuelve a elegir la hora.',
+        icon: 'warning',
+        confirmButtonColor: '#1a1a1a'
+      });
       return;
     }
 
@@ -172,16 +184,30 @@ export class HomeComponent implements OnInit {
 
     const profile = await this.authService.getUserProfile(user.uid);
     if (!profile || !profile['phone']) {
-      alert('¡Espera! Yeray necesita tu número de teléfono por si ocurre algún imprevisto. Por favor, añádelo antes de pedir cita.');
-      this.router.navigate(['/perfil']); 
+      Swal.fire({
+        title: 'Teléfono obligatorio',
+        text: '¡Espera! Yeray necesita tu número de teléfono por si ocurre algún imprevisto.',
+        icon: 'info',
+        confirmButtonColor: '#1a1a1a'
+      }).then(() => {
+        this.router.navigate(['/perfil']); 
+      });
       return; 
     }
+
+    this.isSaving = true; // ACTIVAMOS EL BLOQUEO DE PANTALLA
 
     const userHistory = await this.appointmentService.getUserAppointments(user.uid);
     const activeAppointments = userHistory.filter(appt => appt.status === 'pending' || appt.status === 'confirmed');
     
     if (activeAppointments.length >= 6) {
-      alert('Solo puedes tener un máximo de 6 citas activas a la vez.');
+      this.isSaving = false;
+      Swal.fire({
+        title: 'Límite alcanzado',
+        text: 'Solo puedes tener un máximo de 6 citas activas a la vez.',
+        icon: 'warning',
+        confirmButtonColor: '#1a1a1a'
+      });
       return; 
     }
 
@@ -200,6 +226,8 @@ export class HomeComponent implements OnInit {
     try {
       await this.appointmentService.createAppointment(newAppointment);
       
+      this.isSaving = false; // DESACTIVAMOS EL BLOQUEO AL TERMINAR
+
       Swal.fire({
         title: 'Reserva Registrada',
         html: `
@@ -225,6 +253,7 @@ export class HomeComponent implements OnInit {
       this.occupiedSlots = [];
       this.availableSlots = [];
     } catch (error) {
+      this.isSaving = false;
       Swal.fire({
         title: 'Error de conexión',
         text: 'Hubo un problema al procesar tu reserva. Inténtalo de nuevo.',

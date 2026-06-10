@@ -38,7 +38,7 @@ export class HomeComponent implements OnInit {
   blockedSlotsAdmin: any = {}; 
 
   isCalendarReady: boolean = false;
-  isSaving: boolean = false; // EL BLINDAJE CONTRA DOBLE CLIC
+  isSaving: boolean = false;
 
   async ngOnInit() {
     const hoy = new Date();
@@ -110,7 +110,7 @@ export class HomeComponent implements OnInit {
   };
 
   async onDateSelected(date: Date | null) {
-    if (this.isSaving) return; // Si está guardando, bloquea interacciones
+    if (this.isSaving) return; 
 
     this.selectedDate = date;
     this.selectedSlot = null;
@@ -132,7 +132,7 @@ export class HomeComponent implements OnInit {
   }
 
   isSlotDisabled(slot: string): boolean {
-    if (this.isSaving) return true; // Deshabilita los botones al guardar
+    if (this.isSaving) return true; 
     if (this.occupiedSlots.includes(slot)) return true;
 
     if (this.selectedDate) {
@@ -168,7 +168,6 @@ export class HomeComponent implements OnInit {
   }
 
   async confirmAppointment() { 
-    // VALIDACIÓN EXTREMA
     if (!this.selectedDate || !this.selectedSlot || this.selectedSlot.trim() === '') {
       Swal.fire({
         title: 'Error de selección',
@@ -195,7 +194,7 @@ export class HomeComponent implements OnInit {
       return; 
     }
 
-    this.isSaving = true; // ACTIVAMOS EL BLOQUEO DE PANTALLA
+    this.isSaving = true;
 
     const userHistory = await this.appointmentService.getUserAppointments(user.uid);
     const activeAppointments = userHistory.filter(appt => appt.status === 'pending' || appt.status === 'confirmed');
@@ -226,7 +225,7 @@ export class HomeComponent implements OnInit {
     try {
       await this.appointmentService.createAppointment(newAppointment);
       
-      this.isSaving = false; // DESACTIVAMOS EL BLOQUEO AL TERMINAR
+      this.isSaving = false;
 
       Swal.fire({
         title: 'Reserva Registrada',
@@ -252,14 +251,30 @@ export class HomeComponent implements OnInit {
       this.selectedSlot = null;
       this.occupiedSlots = [];
       this.availableSlots = [];
-    } catch (error) {
+      
+    } catch (error: any) {
       this.isSaving = false;
-      Swal.fire({
-        title: 'Error de conexión',
-        text: 'Hubo un problema al procesar tu reserva. Inténtalo de nuevo.',
-        icon: 'error',
-        confirmButtonColor: '#1a1a1a'
-      });
+      
+      if (error.message === 'SLOT_ALREADY_TAKEN') {
+        Swal.fire({
+          title: '¡Hueco recién ocupado!',
+          text: 'Otro cliente acaba de reservar esta misma hora hace unos segundos. Por favor, elige otro hueco.',
+          icon: 'warning',
+          confirmButtonColor: '#1a1a1a',
+          customClass: { title: 'swal-title-gold' }
+        });
+        
+        if (this.selectedDate) {
+          this.onDateSelected(this.selectedDate);
+        }
+      } else {
+        Swal.fire({
+          title: 'Error de conexión',
+          text: 'Hubo un problema al procesar tu reserva. Inténtalo de nuevo.',
+          icon: 'error',
+          confirmButtonColor: '#1a1a1a'
+        });
+      }
     }
   }
 }

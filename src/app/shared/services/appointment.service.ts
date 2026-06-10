@@ -24,11 +24,28 @@ export class AppointmentService {
   private http = inject(HttpClient);
 
   // ---------------------------------------------------------
-  // 1. CREAR CITA Y AVISAR POR TELEGRAM
+  // 1. CREAR CITA Y AVISAR POR TELEGRAM (AHORA BLINDADO CONTRA DUPLICADOS)
   // ---------------------------------------------------------
   async createAppointment(appointment: Appointment) {
     try {
       const appointmentsRef = collection(this.firestore, 'appointments');
+
+      // 1. REVISIÓN DE ÚLTIMO MILISEGUNDO (Evita duplicados por clics simultáneos)
+      const q = query(
+        appointmentsRef,
+        where('date', '==', appointment.date),
+        where('time', '==', appointment.time),
+        where('status', 'in', ['pending', 'confirmed'])
+      );
+
+      const snapshot = await getDocs(q);
+
+      // Si ya hay alguien, abortamos y lanzamos el error para que salte el SweetAlert en el Frontend
+      if (!snapshot.empty) {
+        throw new Error('SLOT_ALREADY_TAKEN');
+      }
+
+      // 2. Si el hueco sigue libre, guardamos la cita en Firebase
       const docRef = await addDoc(appointmentsRef, appointment);
       
       // ¡AQUÍ ESTÁ EL GATILLO! 
@@ -94,7 +111,7 @@ export class AppointmentService {
   // ---------------------------------------------------------
   // FUNCIONES DEL ADMIN (YERAY)
   // ---------------------------------------------------------
-async getDailyAgenda(date: string): Promise<Appointment[]> {
+  async getDailyAgenda(date: string): Promise<Appointment[]> {
     try {
       const appointmentsRef = collection(this.firestore, 'appointments');
       const q = query(appointmentsRef, where('date', '==', date));
@@ -149,7 +166,7 @@ async getDailyAgenda(date: string): Promise<Appointment[]> {
     }
   }
 
-async getAllPendingAppointments(): Promise<Appointment[]> {
+  async getAllPendingAppointments(): Promise<Appointment[]> {
     try {
       const appointmentsRef = collection(this.firestore, 'appointments');
       const q = query(appointmentsRef, where('status', '==', 'pending'));
@@ -219,7 +236,8 @@ async getAllPendingAppointments(): Promise<Appointment[]> {
       throw error;
     }
   }
-// ---------------------------------------------------------
+
+  // ---------------------------------------------------------
   // ESTADÍSTICAS PARA EL PANEL DE CONTROL
   // ---------------------------------------------------------
   obtenerEstadisticasMensuales(citas: Appointment[]) {
@@ -248,22 +266,22 @@ async getAllPendingAppointments(): Promise<Appointment[]> {
   // EL MOTOR DE TELEGRAM
   // ---------------------------------------------------------
   private enviarAvisoTelegram(nombreCliente: string, fecha: string, hora: string) {
-  // Leemos las claves desde el entorno protegido
-  const telegramToken = environment.telegramToken;
-  const chatId = environment.telegramChatId;
+    // Leemos las claves desde el entorno protegido
+    const telegramToken = environment.telegramToken;
+    const chatId = environment.telegramChatId;
 
-  const url = `https://api.telegram.org/bot${telegramToken}/sendMessage`;
+    const url = `https://api.telegram.org/bot${telegramToken}/sendMessage`;
 
-  const mensaje = `💈 ¡NUEVA RESERVA!\n\n👤 Cliente: ${nombreCliente}\n📅 Fecha: ${fecha}\n⏰ Hora: ${hora}\n\nRevisa tu panel de YerysBarber.`;
+    const mensaje = `💈 ¡NUEVA RESERVA!\n\n👤 Cliente: ${nombreCliente}\n📅 Fecha: ${fecha}\n⏰ Hora: ${hora}\n\nRevisa tu panel de YerysBarber.`;
 
-  const body = {
-    chat_id: chatId,
-    text: mensaje
-  };
+    const body = {
+      chat_id: chatId,
+      text: mensaje
+    };
 
-  this.http.post(url, body).subscribe({
-    next: () => console.log('¡Mensaje de Telegram enviado con éxito!'),
-    error: (err) => console.error('Error al enviar el aviso por Telegram', err)
-  });
-}
+    this.http.post(url, body).subscribe({
+      next: () => console.log('¡Mensaje de Telegram enviado con éxito!'),
+      error: (err) => console.error('Error al enviar el aviso por Telegram', err)
+    });
+  }
 }

@@ -13,6 +13,7 @@ export interface Appointment {
   notes: string;
   createdAt: number;
   clientPhone?: string;
+  rated?: boolean | 'skipped';
 }
 
 @Injectable({
@@ -104,6 +105,16 @@ export class AppointmentService {
       await updateDoc(docRef, { status: 'cancelled' });
     } catch (error) {
       console.error('Error al cancelar la cita:', error);
+      throw error;
+    }
+  }
+
+  async markAppointmentAsRated(appointmentId: string, status: boolean | 'skipped' = true): Promise<void> {
+    try {
+      const docRef = doc(this.firestore, 'appointments', appointmentId);
+      await updateDoc(docRef, { rated: status });
+    } catch (error) {
+      console.error('Error al marcar la cita como valorada:', error);
       throw error;
     }
   }

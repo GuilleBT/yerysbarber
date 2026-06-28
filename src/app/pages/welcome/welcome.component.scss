@@ -1,81 +1,111 @@
 @use "sass:color";
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap');
 
-// ── Variables ───────────────────────────────────────────────────────────────
-$primary-gold:       #c9a54b;
-$primary-gold-light: #e5c27e;
-$text-dark:          #1e1e1e;
-$text-soft:          #5a5a5a;
+// ── Variables Premium (Modo Claro Directo) ──────────────────────────────────
+$primary-gold:       #c5a059; // Champagne dorado de lujo
+$primary-gold-light: #dfbe7e;
+$text-dark:          #1c1b18; // Negro carbón profundo
+$text-soft:          #444444; // Gris oscuro
 $white:              #ffffff;
-$gray-bg:            #fcf9f5;
+$gray-bg:            #fdfcf9; // Blanco cálido de fondo
+$gray-card:          rgba(255, 255, 255, 0.88); // Cristal blanco translúcido
+$shadow-soft:        0 12px 30px rgba(0, 0, 0, 0.05);
+$shadow-gold:        0 8px 20px rgba(197, 160, 89, 0.15);
 
-// ── Keyframes ───────────────────────────────────────────────────────────────
+// ── Keyframes Cinematográficos ───────────────────────────────────────────────
 
-// Logo: escala + ligera rotación → "aparece girando"
+@keyframes bgZoom {
+  0%   { transform: scale(1.08); opacity: 0; }
+  100% { transform: scale(1); opacity: 0.82; } // Nítida al 82%
+}
+
 @keyframes logoEntrance {
-  0%   { opacity: 0; transform: scale(0.65) rotate(-8deg); }
-  55%  { transform: scale(1.06) rotate(2deg); }
+  0%   { opacity: 0; transform: scale(0.6) rotate(-15deg); }
+  70%  { transform: scale(1.05) rotate(2deg); }
   100% { opacity: 1; transform: scale(1) rotate(0deg); }
 }
 
-// Halo dorado que pulsa bajo el logo
 @keyframes haloPulse {
-  0%, 100% { box-shadow: 0 15px 35px rgba($primary-gold, 0.15); }
-  50%       { box-shadow: 0 15px 40px rgba($primary-gold, 0.30); }
+  0%, 100% { box-shadow: 0 8px 20px rgba($primary-gold, 0.12); }
+  50%       { box-shadow: 0 8px 30px rgba($primary-gold, 0.28); }
 }
 
-// Slide-up genérico (título, subtítulo, botones)
 @keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(28px); }
+  from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-// Brillo que cruza el título una sola vez
-@keyframes textShine {
-  0%   { background-position: -200% center; }
-  100% { background-position:  200% center; }
-}
-
-// Separador dorado que se expande desde el centro
 @keyframes lineExpand {
   from { width: 0; opacity: 0; }
-  to   { width: 48px; opacity: 1; }
+  to   { width: 32px; opacity: 1; }
+}
+
+@keyframes arrowBounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(6px); }
 }
 
 // ── Contenedor principal ─────────────────────────────────────────────────────
 .welcome-container {
+  min-height: calc(100vh - 60px);
+  background: $gray-bg;
+  position: relative;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  font-family: 'Montserrat', sans-serif;
+
+  @media (min-width: 768px) {
+    min-height: calc(100vh - 70px);
+  }
+
+  // Foto de la barbería de fondo (Nítida y hermosa)
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url('../../../assets/salon-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.82;
+    filter: brightness(0.98) contrast(1.02);
+    pointer-events: none;
+    z-index: 0;
+    
+    // Animación de entrada de fondo
+    animation: bgZoom 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  // Degradado sutil para suavizar las esquinas
+  &::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba($gray-bg, 0.1) 0%,
+      rgba($gray-bg, 0.35) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  > * { position: relative; z-index: 2; }
+}
+
+// ── Hero Section ─────────────────────────────────────────────────────────────
+.hero-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   min-height: calc(100vh - 60px);
-  padding: 40px 20px 30px;
-  background: $gray-bg;
-  position: relative;
+  padding: 40px 20px 20px;
   box-sizing: border-box;
 
   @media (min-width: 768px) {
     min-height: calc(100vh - 70px);
-    padding: 60px 40px 40px;
+    padding: 60px 40px 30px;
   }
-
-  // Patrón de fondo sutil (sin cambios)
-  &::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: repeating-linear-gradient(
-      45deg,
-      rgba($primary-gold, 0.02) 0px,
-      rgba($primary-gold, 0.02) 20px,
-      transparent 20px,
-      transparent 40px
-    );
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  > * { position: relative; z-index: 1; }
 }
 
 // ── Branding ─────────────────────────────────────────────────────────────────
@@ -84,242 +114,711 @@ $gray-bg:            #fcf9f5;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  margin-top: 10vh;
+  margin-top: 6vh;
+  margin-bottom: 24px;
 
-  @media (min-width: 768px) { margin-top: 12vh; }
-
-  // — Logo —
   .brand-logo {
-    width: 130px;
-    height: 130px;
+    width: 100px;
+    height: 100px;
     object-fit: contain;
-    margin-bottom: 24px;
+    margin-bottom: 18px;
     border-radius: 50%;
     background: $white;
-    padding: 12px;
-    border: 1px solid rgba($primary-gold, 0.15);
+    padding: 8px;
+    border: 1px solid rgba($primary-gold, 0.28);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 
-    // Animación de entrada
     opacity: 0;
     animation:
-      logoEntrance 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards,
+      logoEntrance 1.0s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards,
       haloPulse    3.5s ease-in-out                   1.2s infinite;
 
     @media (min-width: 768px) {
-      width: 160px;
-      height: 160px;
-      padding: 16px;
-      margin-bottom: 32px;
+      width: 110px;
+      height: 110px;
+      padding: 10px;
+      margin-bottom: 22px;
     }
   }
 
-  // — Título —
   h1 {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 56px;
+    font-size: 44px;
     font-weight: 700;
-    margin: 0 0 8px 0;
-    color: $text-dark;
-    letter-spacing: 1px;
+    margin: 0;
+    color: $primary-gold; // Sólido oro champagne de gran lujo
+    letter-spacing: 0.5px;
     text-align: center;
     line-height: 1.1;
+    // Sombra blanca nítida para lectura perfecta
+    text-shadow: 
+      0 1px 2px rgba(255, 255, 255, 0.95), 
+      0 2px 10px rgba(255, 255, 255, 0.7);
 
-    // Brillo dorado al aparecer
-    background: linear-gradient(
-      90deg,
-      $text-dark 30%,
-      rgba($primary-gold, 0.9) 50%,
-      $text-dark 70%
-    );
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-
-    // Entrada + efecto shine
     opacity: 0;
-    animation:
-      fadeSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.45s forwards,
-      textShine   1.2s ease-in-out                   1.1s 1;
+    animation: fadeSlideUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.45s forwards;
 
     @media (min-width: 768px) {
-      font-size: 72px;
-      margin-bottom: 12px;
-      letter-spacing: 2px;
-    }
-
-    @media (max-width: 380px) { font-size: 48px; }
-  }
-
-  // — Separador dorado decorativo —
-  &::after {
-    content: '';
-    display: block;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, $primary-gold, transparent);
-    margin: 12px 0 14px;
-
-    width: 0;
-    opacity: 0;
-    animation: lineExpand 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.9s forwards;
-  }
-
-  // — Subtítulo —
-  p {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 13px;
-    font-weight: 400;
-    color: $text-soft;
-    text-align: center;
-    margin: 0;
-    padding: 0 24px;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    word-break: break-word;
-    max-width: 400px;
-
-    opacity: 0;
-    animation: fadeSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.0s forwards;
-
-    @media (min-width: 768px) {
-      font-size: 14px;
-      letter-spacing: 5px;
-      max-width: 500px;
-    }
-
-    @media (max-width: 380px) {
-      font-size: 11px;
-      letter-spacing: 3px;
+      font-size: 54px;
     }
   }
-}
 
-// ── Botones ───────────────────────────────────────────────────────────────────
-.actions {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-  max-width: 320px;
-  margin-bottom: 8vh;
-
-  @media (min-width: 768px) {
-    max-width: 360px;
-    gap: 20px;
-    margin-bottom: 10vh;
-  }
-
-  @media (max-width: 380px) {
-    max-width: 280px;
-    gap: 14px;
-  }
-
-  button {
-    height: 60px;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 15px;
-    font-weight: 500;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    border-radius: 30px;
-    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  // Divisor con estrella dorada
+  .brand-divider {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
-    width: 100%;
-    padding: 0 24px;
-
-    // Entrada escalonada: primero el principal, luego el secundario
+    width: 120px;
+    margin: 12px 0 16px;
     opacity: 0;
-    &:first-child { animation: fadeSlideUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) 1.15s forwards; }
-    &:last-child  { animation: fadeSlideUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) 1.30s forwards; }
+    animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.65s forwards;
 
-    @media (min-width: 768px) {
-      height: 65px;
-      font-size: 16px;
+    .line {
+      height: 1px;
+      flex-grow: 1;
+      background: linear-gradient(to right, transparent, rgba($primary-gold, 0.6), transparent);
     }
 
-    mat-icon {
-      font-size: 22px;
-      width: 22px;
-      height: 22px;
-      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    .divider-icon {
+      font-size: 12px;
+      width: 12px;
+      height: 12px;
+      color: $primary-gold;
+      filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.8));
     }
-
-    &:active { transform: scale(0.97); }
   }
 
-  // — Botón dorado principal —
+  p {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: $text-soft;
+    text-align: center;
+    margin: 0;
+    padding: 0 10px;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    max-width: 280px;
+    text-shadow: 0 2px 8px rgba(255, 255, 255, 0.9);
+
+    opacity: 0;
+    animation: fadeSlideUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.75s forwards;
+
+    @media (min-width: 768px) {
+      font-size: 13px;
+      letter-spacing: 4.5px;
+    }
+  }
+}
+
+// ── Botones de Acción ────────────────────────────────────────────────────────
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 300px;
+  margin-bottom: 2vh;
+
+  @media (min-width: 768px) {
+    max-width: 330px;
+    gap: 16px;
+  }
+
+  button {
+    height: 52px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-radius: 26px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+
+    opacity: 0;
+    &:first-child { animation: fadeSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.9s forwards; }
+    &:last-child  { animation: fadeSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 1.05s forwards; }
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      transition: transform 0.2s ease;
+    }
+
+    // Animación física táctil nativa
+    &:active {
+      transform: scale(0.95) !important;
+      filter: brightness(0.9);
+    }
+  }
+
+  // — Botón Principal (Carbón y Oro Champán - Contraste Absoluto) —
   .btn-gold {
-    background: linear-gradient(
-      135deg,
-      $primary-gold,
-      color.adjust($primary-gold, $lightness: -6%)
-    );
+    background: #1c1b18 !important; // Negro carbón lujoso
     color: $white !important;
-    border: none !important;
-    box-shadow: 0 8px 24px rgba($primary-gold, 0.28);
+    border: 1.5px solid $primary-gold !important; // Borde dorado
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
     position: relative;
     overflow: hidden;
 
-    // Brillo que recorre el botón al hacer hover
-    &::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        120deg,
-        transparent 30%,
-        rgba($white, 0.18) 50%,
-        transparent 70%
-      );
-      transform: translateX(-100%);
-      transition: transform 0.55s ease;
-    }
+    mat-icon { color: $primary-gold; }
 
     &:hover {
-      box-shadow: 0 14px 32px rgba($primary-gold, 0.38) !important;
-      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22) !important;
+      transform: translateY(-2px);
+      background: $primary-gold !important; // Pasa a dorado completo
+      color: #111111 !important; // Texto oscuro
 
-      &::after { transform: translateX(100%); }
-
-      mat-icon { transform: translateX(4px) scale(1.1); }
+      mat-icon { color: #111111; }
     }
 
     &:active {
-      transform: translateY(0) scale(0.97);
-      box-shadow: 0 4px 12px rgba($primary-gold, 0.2) !important;
+      transform: scale(0.95) !important;
     }
   }
 
-  // — Botón outline secundario —
+  // — Botón Secundario (Cristal Blanco) —
   .btn-outline {
-    background: transparent !important;
+    background: rgba(255, 255, 255, 0.90) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1.5px solid rgba($primary-gold, 0.35) !important;
-    color: $text-dark !important;
+    color: #1c1b18 !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.03);
 
     mat-icon { color: $primary-gold; }
 
     &:hover {
       border-color: $primary-gold !important;
-      background: rgba($primary-gold, 0.04) !important;
-
-      mat-icon { transform: translateX(5px); }
+      background: rgba(255, 255, 255, 0.98) !important;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+      mat-icon { transform: scale(1.1); }
     }
 
     &:active {
-      background: rgba($primary-gold, 0.08) !important;
+      transform: scale(0.95) !important;
     }
   }
 }
 
-// ── Safe area (notch) ────────────────────────────────────────────────────────
+// ── Indicador de scroll ──────────────────────────────────────────────────────
+.scroll-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  margin-top: 2vh;
+  gap: 2px;
+  color: $white; // Blanco para máxima visibilidad sobre el suelo gris
+  text-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.8), 
+    0 2px 8px rgba(0, 0, 0, 0.5);
+  
+  opacity: 0;
+  animation: fadeSlideUp 0.6s ease-out 1.25s forwards;
+
+  .scroll-text {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .scroll-arrow {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    color: $primary-gold; // Flecha dorada
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.6));
+    animation: arrowBounce 1.8s infinite ease-in-out;
+  }
+
+  &:hover {
+    color: $primary-gold-light;
+    .scroll-arrow { color: $primary-gold-light; }
+  }
+}
+
+// ── Sección de Reseñas (Fondo Transparente) ──────────────────────────────────
+.reviews-section {
+  width: 100%;
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-top: none;
+  margin-top: 20px;
+  padding: 60px 20px 80px;
+  box-sizing: border-box;
+  box-shadow: none;
+
+  @media (min-width: 768px) {
+    max-width: 600px;
+    margin: 40px auto 0;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 40px;
+
+    h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: $text-dark;
+      margin: 0 0 12px 0;
+      line-height: 1.35;
+      position: relative;
+      text-shadow: 0 2px 10px rgba(255, 255, 255, 0.95);
+
+      @media (min-width: 768px) {
+        font-size: 38px;
+      }
+
+      &::after {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 1.5px;
+        background: $primary-gold;
+        margin: 14px auto 0;
+      }
+    }
+
+    .rating-summary {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-top: 20px;
+
+      .rating-number {
+        font-size: 32px;
+        font-weight: 700;
+        color: $text-dark;
+        text-shadow: 0 2px 8px rgba(255, 255, 255, 0.95);
+      }
+
+      .stars {
+        display: flex;
+        gap: 2px;
+
+        .star-gold {
+          color: $primary-gold;
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+          filter: drop-shadow(0 1px 2px rgba(255, 255, 255, 0.8));
+        }
+      }
+
+      .rating-count {
+        font-size: 12px;
+        color: $text-soft;
+        font-weight: 600;
+        text-shadow: 0 1px 4px rgba(255, 255, 255, 0.8);
+      }
+    }
+  }
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// ── Tarjeta de opinión de Cristal Premium (Alabastro Translúcido) ─────────────
+.review-card {
+  background: $gray-card;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 24px;
+  border: 1px solid rgba($primary-gold, 0.22);
+  border-left: 5px solid $primary-gold;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+
+  // Comilla gigante difuminada en el fondo
+  &::after {
+    content: '“';
+    position: absolute;
+    right: 20px;
+    bottom: -15px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 120px;
+    font-weight: 700;
+    color: rgba($primary-gold, 0.06);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  &:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 18px 45px rgba($primary-gold, 0.08), 0 2px 8px rgba(0, 0, 0, 0.02);
+    border-color: rgba($primary-gold, 0.35);
+  }
+
+  .review-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 14px;
+    position: relative;
+  }
+
+  .reviewer-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $primary-gold-light 0%, $primary-gold 100%);
+    color: $white;
+    font-weight: 600;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    box-shadow: 0 4px 10px rgba($primary-gold, 0.15);
+  }
+
+  .reviewer-info {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+
+    .reviewer-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: $text-dark;
+    }
+
+    .verified-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 9px;
+      color: $primary-gold;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-top: 3px;
+      background: rgba($primary-gold, 0.06);
+      padding: 2px 8px;
+      border-radius: 12px;
+      width: fit-content;
+
+      .verified-icon {
+        font-size: 12px;
+        width: 12px;
+        height: 12px;
+      }
+    }
+  }
+
+  .review-stars {
+    display: flex;
+    gap: 1px;
+
+    .star-gold {
+      color: $primary-gold;
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  // Comentario editorial en Serif Italic
+  .review-comment {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    color: #222222;
+    line-height: 1.55;
+    margin: 0 0 12px 0;
+    font-style: italic;
+  }
+
+  .review-date {
+    font-size: 11px;
+    color: #a0a0a0;
+    display: block;
+    text-align: right;
+    font-weight: 500;
+  }
+}
+
+// Safe areas para notch en móviles
 @supports (padding: max(0px)) {
-  .welcome-container {
+  .hero-section {
+    padding-left:  max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+  .reviews-section {
     padding-left:  max(20px, env(safe-area-inset-left));
     padding-right: max(20px, env(safe-area-inset-right));
   }
 }
 
-* { box-sizing: border-box; }
+/* Botón de borrar reseña para el administrador */
+.btn-delete-review {
+  color: #c62828 !important;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  margin-left: auto;
+  
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+  
+  &:hover {
+    opacity: 1;
+    background: rgba(#c62828, 0.08) !important;
+    transform: scale(1.08);
+  }
+
+  &:active {
+    transform: scale(0.92) !important;
+  }
+}
+
+/* Modal de Valoración - Estilo de Cristal Premium */
+.review-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 9999;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.review-modal-card {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba($primary-gold, 0.25);
+  border-radius: 28px;
+  width: 100%;
+  max-width: 385px;
+  padding: 32px 24px 24px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  animation: modalScaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, $primary-gold, transparent);
+  }
+
+  .modal-header {
+    margin-bottom: 20px;
+
+    .logo-circle {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba($primary-gold, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      border: 1px solid rgba($primary-gold, 0.25);
+      box-shadow: 0 8px 16px rgba($primary-gold, 0.08);
+
+      .modal-logo-icon {
+        color: $primary-gold;
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+      }
+    }
+
+    h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: $text-dark;
+      margin: 0 0 8px 0;
+    }
+
+    p {
+      font-size: 13px;
+      color: $text-soft;
+      margin: 0;
+      line-height: 1.5;
+      padding: 0 10px;
+
+      strong {
+        color: $text-dark;
+        font-weight: 600;
+      }
+    }
+  }
+
+  /* Contenedor de estrellas interactivas */
+  .stars-rating-container {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+
+    .star-btn {
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      outline: none;
+      transition: transform 0.2s ease;
+
+      mat-icon {
+        font-size: 38px;
+        width: 38px;
+        height: 38px;
+        color: #d8d8d8;
+        transition: color 0.25s ease, transform 0.25s ease;
+
+        &.selected {
+          color: $primary-gold;
+          filter: drop-shadow(0 2px 8px rgba($primary-gold, 0.35));
+        }
+      }
+
+      &:hover {
+        transform: scale(1.15);
+      }
+
+      &:active {
+        transform: scale(0.9);
+      }
+    }
+  }
+
+  /* Input de opinión */
+  .comment-input-container {
+    width: 100%;
+    position: relative;
+    margin-bottom: 24px;
+    box-sizing: border-box;
+
+    textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1.5px solid rgba($primary-gold, 0.18);
+      border-radius: 16px;
+      padding: 14px 14px 28px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      color: $text-dark;
+      resize: none;
+      outline: none;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+
+      &:focus {
+        background: $white;
+        border-color: $primary-gold;
+        box-shadow: 0 8px 20px rgba($primary-gold, 0.12);
+      }
+    }
+
+    .char-counter {
+      position: absolute;
+      right: 12px;
+      bottom: 8px;
+      font-size: 10px;
+      color: #999;
+      font-weight: 500;
+    }
+  }
+
+  /* Acciones del modal */
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+
+    button {
+      flex: 1;
+      height: 48px;
+      border-radius: 24px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+      &:active {
+        transform: scale(0.95) !important;
+      }
+    }
+
+    .btn-skip {
+      border: 1.5px solid rgba($primary-gold, 0.3) !important;
+      color: $text-soft !important;
+      background: transparent !important;
+
+      &:hover {
+        background: rgba($primary-gold, 0.05) !important;
+        border-color: $primary-gold !important;
+        color: $text-dark !important;
+      }
+    }
+
+    .btn-submit {
+      background: #1c1b18 !important; // Negro carbón de lujo
+      color: $white !important;
+      border: 1.5px solid $primary-gold !important;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+
+      &:hover:not([disabled]) {
+        background: $primary-gold !important;
+        color: #1c1b18 !important;
+        box-shadow: 0 8px 20px rgba($primary-gold, 0.3) !important;
+      }
+
+      &[disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+@keyframes modalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

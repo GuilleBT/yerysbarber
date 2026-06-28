@@ -1,144 +1,489 @@
-<div class="admin-container">
+<div class="welcome-container">
   
-  <mat-card class="stats-card">
-    <mat-card-content class="stats-content">
-      
-      <div class="stats-main">
-        <mat-icon class="stats-icon">content_cut</mat-icon>
-        <div class="stats-info">
-          <h3>Total Cortes Históricos</h3>
-          <span class="counter">{{ totalCuts }}</span>
-        </div>
+  <!-- Hero Section (Estilo de la página principal) -->
+  <div class="hero-section">
+    <div class="branding">
+      <img src="assets/logo.png" alt="YerysBarber Logo" class="brand-logo">
+      <h1>YerysBarber</h1>
+      <div class="brand-divider">
+        <span class="line"></span>
+        <mat-icon class="divider-icon">shield</mat-icon>
+        <span class="line"></span>
       </div>
-      
-      <button class="btn-premium-gold" (click)="toggleGrafica()">
-        <mat-icon>{{ mostrarGrafica ? 'visibility_off' : 'trending_up' }}</mat-icon>
-        <span>{{ mostrarGrafica ? 'Ocultar panel' : 'Ver estadísticas' }}</span>
+      <p>Panel de Control</p>
+    </div>
+
+    <div class="actions">
+      <!-- Botón de Calendario -->
+      <button mat-raised-button 
+              [class.btn-gold]="activeTab === 'calendar'" 
+              [class.btn-outline]="activeTab !== 'calendar'"
+              (click)="setActiveTab('calendar')">
+        <mat-icon>calendar_today</mat-icon>
+        Calendario y Citas
       </button>
 
-    </mat-card-content>
+      <!-- Botón de Estadísticas -->
+      <button mat-raised-button 
+              [class.btn-gold]="activeTab === 'stats'" 
+              [class.btn-outline]="activeTab !== 'stats'"
+              (click)="setActiveTab('stats')">
+        <mat-icon>analytics</mat-icon>
+        Estadísticas
+      </button>
 
-    <div class="grafica-container" *ngIf="mostrarGrafica" style="padding: 0 24px 24px 24px;">
-      <mat-divider style="margin-bottom: 20px; background-color: rgba(255,255,255,0.1);"></mat-divider>
-      <h3 style="color: #D4AF37; margin-bottom: 16px;">Rendimiento por Meses</h3>
-      <div style="display: block; background: white; padding: 16px; border-radius: 8px;">
-        <canvas baseChart
-          [data]="datosGrafica"
-          [options]="opcionesGrafica"
-          [type]="'bar'">
-        </canvas>
-      </div>
-    </div>
-  </mat-card>
-
-  @if (pendingRequests.length > 0) {
-    <h2 class="section-title" style="color: #D4AF37; display: flex; align-items: center; gap: 8px;">
-      <mat-icon>notifications_active</mat-icon> Peticiones por revisar ({{ pendingRequests.length }})
-    </h2>
-    <div class="pending-list" style="margin-bottom: 40px; display: flex; flex-direction: column; gap: 12px;">
-      @for (appt of pendingRequests; track appt.id) {
-        <mat-card class="agenda-card" style="border-left-color: #ffc107;">
-          <mat-card-content>
-           <div class="agenda-header">
-              <span class="time" style="font-weight: bold; font-size: 18px;">
-                {{ appt.date | date:'shortDate' }} - {{ appt.time }} h
-              </span>
-              
-              <div class="client-info" style="text-align: right;">
-                <span class="client-name" style="display: block; font-weight: 600; font-size: 16px;">
-                  {{ appt.clientName }}
-                </span>
-                <span class="client-phone" style="display: flex; align-items: center; justify-content: flex-end; gap: 4px; font-size: 13px; color: #666; margin-top: 4px;">
-                  <mat-icon style="font-size: 14px; width: 14px; height: 14px;">phone</mat-icon>
-                  {{ appt.clientPhone }}
-                </span>
-              </div>
-            </div>
-            
-            <mat-divider style="margin: 12px 0;"></mat-divider>
-
-            <div class="agenda-actions">
-              <span class="status-badge pending">Nueva Petición</span>
-              <div class="action-buttons">
-                <button mat-icon-button color="primary" (click)="changeStatus(appt.id, 'confirmed')" title="Aceptar Cita">
-                  <mat-icon>check_circle</mat-icon>
-                </button>
-                <button mat-icon-button color="warn" (click)="changeStatus(appt.id, 'cancelled')" title="Rechazar Cita">
-                  <mat-icon>cancel</mat-icon>
-                </button>
-              </div>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      }
-    </div>
-  }
-
-  <div class="dashboard-grid">
-    <div class="calendar-section">
-      <mat-card class="calendar-card">
-        <mat-calendar [selected]="selectedDate" (selectedChange)="onDateSelected($event)"></mat-calendar>
-      </mat-card>
+      <!-- Botón de Ajustes -->
+      <button mat-raised-button 
+              [class.btn-gold]="activeTab === 'settings'" 
+              [class.btn-outline]="activeTab !== 'settings'"
+              (click)="setActiveTab('settings')">
+        <mat-icon>settings</mat-icon>
+        Ajustes
+      </button>
     </div>
 
-    <div class="agenda-section">
-      <h2 class="section-title">Agenda: {{ selectedDate | date:'longDate' }}</h2>
+    <!-- Indicador de scroll para las opiniones -->
+    <div class="scroll-indicator" (click)="scrollToReviews()">
+      <span class="scroll-text">Opiniones de clientes</span>
+      <mat-icon class="scroll-arrow">keyboard_arrow_down</mat-icon>
+    </div>
+  </div>
 
-      @if (dailyAppointments.length === 0) {
-        <div class="empty-state">
-          <mat-icon>coffee</mat-icon>
-          <p>No hay citas para este día.</p>
-        </div>
-      } @else {
-        <div class="agenda-list">
-          @for (appt of dailyAppointments; track appt.id) {
-            <mat-card class="agenda-card" [class.is-completed]="appt.status === 'completed'">
-              <mat-card-content>
-                <div class="agenda-header">
-              <span class="time" style="font-weight: bold; font-size: 18px;">
-                {{ appt.date | date:'shortDate' }} - {{ appt.time }} h
-              </span>
-              
-              <div class="client-info" style="text-align: right;">
-                <span class="client-name" style="display: block; font-weight: 600; font-size: 16px;">
-                  {{ appt.clientName }}
-                </span>
-                <span class="client-phone" style="display: flex; align-items: center; justify-content: flex-end; gap: 4px; font-size: 13px; color: #666; margin-top: 4px;">
-                  <mat-icon style="font-size: 14px; width: 14px; height: 14px;">phone</mat-icon>
-                  {{ appt.clientPhone }}
-                </span>
-              </div>
-            </div>
-                
-                <mat-divider style="margin: 12px 0;"></mat-divider>
+  <!-- Contenedor del contenido principal segmentado -->
+  <div id="admin-content-section" class="admin-content-section">
+    
+    <!-- VISTA 1: CALENDARIO Y CITAS -->
+    @if (activeTab === 'calendar') {
+      <div class="tab-content-container fade-in">
+        
+        <!-- Peticiones por revisar (Nuevas citas pendientes) -->
+        @if (pendingRequests.length > 0) {
+          <h2 class="section-title text-gold" style="margin-bottom: 20px;">
+            <mat-icon class="pulse-icon">notifications_active</mat-icon> Peticiones por revisar ({{ pendingRequests.length }})
+          </h2>
+          <div class="pending-list" style="margin-bottom: 30px;">
+            @for (appt of pendingRequests; track appt.id) {
+              <mat-card class="agenda-card pending-card">
+                <mat-card-content>
+                  <div class="agenda-header">
+                    <span class="time">
+                      {{ appt.date | date:'dd/MM/yyyy' }} - {{ appt.time }} h
+                    </span>
+                    
+                    <div class="client-info">
+                      <span class="client-name">{{ appt.clientName }}</span>
+                      <span class="client-phone">
+                        <mat-icon>phone</mat-icon>
+                        {{ appt.clientPhone }}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <mat-divider class="divider-thin"></mat-divider>
 
-                <div class="agenda-actions">
-                  <span class="status-badge" [ngClass]="appt.status">
-                    {{ appt.status === 'pending' ? 'Pendiente' : (appt.status === 'confirmed' ? 'Confirmado' : 'Completado') }}
-                  </span>
-
-                  <div class="action-buttons">
-                    @if (appt.status === 'pending') {
-                      <button mat-icon-button color="primary" (click)="changeStatus(appt.id, 'confirmed')" title="Aceptar Cita">
+                  <div class="agenda-actions">
+                    <span class="status-badge pending">Nueva Petición</span>
+                    <div class="action-buttons">
+                      <button mat-icon-button class="btn-action-success" (click)="changeStatus(appt.id, 'confirmed')" title="Aceptar Cita">
                         <mat-icon>check_circle</mat-icon>
                       </button>
-                      <button mat-icon-button color="warn" (click)="changeStatus(appt.id, 'cancelled')" title="Rechazar Cita">
+                      <button mat-icon-button class="btn-action-danger" (click)="changeStatus(appt.id, 'cancelled')" title="Rechazar Cita">
                         <mat-icon>cancel</mat-icon>
                       </button>
-                    }
-                    
-                    @if (appt.status === 'confirmed') {
-                      <button mat-raised-button class="btn-gold" (click)="changeStatus(appt.id, 'completed')">
-                        <mat-icon>done_all</mat-icon> Terminar Corte
-                      </button>
-                    }
+                    </div>
                   </div>
-                </div>
-              </mat-card-content>
+                </mat-card-content>
+              </mat-card>
+            }
+          </div>
+        }
+
+        <!-- Grid de Calendario e Historial Diario -->
+        <div class="dashboard-grid">
+          <div class="calendar-section">
+            <mat-card class="calendar-card">
+              <mat-calendar [selected]="selectedDate" (selectedChange)="onDateSelected($event)"></mat-calendar>
             </mat-card>
+          </div>
+
+          <div class="agenda-section">
+            <h2 class="section-title text-gold">Agenda: {{ selectedDate | date:'longDate' }}</h2>
+
+            @if (dailyAppointments.length === 0) {
+              <div class="empty-state">
+                <mat-icon>coffee</mat-icon>
+                <p>No hay citas para este día.</p>
+              </div>
+            } @else {
+              <div class="agenda-list">
+                @for (appt of dailyAppointments; track appt.id) {
+                  <mat-card class="agenda-card" [class.is-completed]="appt.status === 'completed'">
+                    <mat-card-content>
+                      <div class="agenda-header">
+                        <span class="time">
+                          {{ appt.time }} h
+                        </span>
+                        
+                        <div class="client-info">
+                          <span class="client-name">{{ appt.clientName }}</span>
+                          <span class="client-phone">
+                            <mat-icon>phone</mat-icon>
+                            {{ appt.clientPhone }}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <mat-divider class="divider-thin"></mat-divider>
+
+                      <div class="agenda-actions">
+                        <span class="status-badge" [ngClass]="appt.status">
+                          {{ appt.status === 'pending' ? 'Pendiente' : (appt.status === 'confirmed' ? 'Confirmado' : 'Completado') }}
+                        </span>
+
+                        <div class="action-buttons">
+                          @if (appt.status === 'confirmed') {
+                            <button mat-raised-button class="btn-premium-action-gold" (click)="changeStatus(appt.id, 'completed')">
+                              <mat-icon>done_all</mat-icon> Terminar Corte
+                            </button>
+                            <button mat-icon-button class="btn-action-danger" (click)="changeStatus(appt.id, 'cancelled')" title="Anular Cita">
+                              <mat-icon>cancel</mat-icon>
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    }
+
+    <!-- VISTA 2: ESTADÍSTICAS DEL NEGOCIO -->
+    @if (activeTab === 'stats') {
+      <div class="tab-content-container fade-in">
+        
+        <!-- Grid de KPIs (Tarjetas de métricas rápidas) -->
+        <div class="stats-grid-container">
+          <div class="stats-item-card">
+            <div class="stats-card-icon-wrapper">
+              <mat-icon>content_cut</mat-icon>
+            </div>
+            <div class="stats-info">
+              <h3>Cortes Completados</h3>
+              <span class="counter">{{ totalCuts }}</span>
+            </div>
+          </div>
+          
+          <div class="stats-item-card">
+            <div class="stats-card-icon-wrapper">
+              <mat-icon>people</mat-icon>
+            </div>
+            <div class="stats-info">
+              <h3>Clientes Activos</h3>
+              <span class="counter">{{ totalClients }}</span>
+            </div>
+          </div>
+          
+          <div class="stats-item-card">
+            <div class="stats-card-icon-wrapper">
+              <mat-icon>schedule</mat-icon>
+            </div>
+            <div class="stats-info">
+              <h3>Día y Hora Pico</h3>
+              <span class="counter-text">
+                {{ busiestHour }}
+                <span class="sub-label">({{ busiestDay }})</span>
+              </span>
+            </div>
+          </div>
+          
+          <div class="stats-item-card">
+            <div class="stats-card-icon-wrapper">
+              <mat-icon>trending_down</mat-icon>
+            </div>
+            <div class="stats-info">
+              <h3>Tasa Cancelación</h3>
+              <span class="counter">{{ cancellationRate }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráficas del negocio -->
+        <div class="charts-grid-container" *ngIf="mostrarGrafica">
+          <div class="chart-box-card">
+            <h4 class="chart-title">Rendimiento Mensual</h4>
+            <div class="chart-canvas-wrapper">
+              <canvas baseChart
+                [data]="datosGraficaMensual"
+                [options]="opcionesGrafica"
+                [type]="'bar'">
+              </canvas>
+            </div>
+          </div>
+
+          <div class="chart-box-card">
+            <h4 class="chart-title">Distribución Semanal</h4>
+            <div class="chart-canvas-wrapper">
+              <canvas baseChart
+                [data]="datosGraficaSemanal"
+                [options]="opcionesGrafica"
+                [type]="'bar'">
+              </canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de Clientes VIP -->
+        <div class="vip-section-card">
+          <h4 class="vip-title">
+            <mat-icon>military_tech</mat-icon> Clientes VIP (Top 5 con más cortes)
+          </h4>
+          <div class="vip-table-wrapper">
+            <table class="vip-table-premium">
+              <thead>
+                <tr>
+                  <th style="width: 80px; text-align: left;">Rango</th>
+                  <th style="text-align: left;">Cliente</th>
+                  <th style="text-align: right;">Total Cortes</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (client of vipClients; track client.name; let i = $index) {
+                  <tr>
+                    <td class="vip-rank-cell">#{{ i + 1 }}</td>
+                    <td class="vip-name-cell">
+                      <div class="vip-avatar">
+                        {{ client.name.charAt(0).toUpperCase() }}
+                      </div>
+                      <span>{{ client.name }}</span>
+                    </td>
+                    <td class="vip-count-cell">{{ client.count }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="3" class="vip-empty-cell">
+                      No hay suficientes datos de cortes completados.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    }
+
+    <!-- VISTA 3: AJUSTES DE LA BARBERÍA -->
+    @if (activeTab === 'settings') {
+      <div class="tab-content-container fade-in">
+        
+        <mat-card class="settings-main-card">
+          <mat-card-header>
+            <mat-card-title class="settings-title-premium">
+              <mat-icon>tune</mat-icon> Configuración de la Barbería
+            </mat-card-title>
+          </mat-card-header>
+          
+          <mat-card-content class="settings-content-premium">
+            <mat-accordion multi="false" class="premium-accordion">
+              
+              <!-- 1. Horario Semanal -->
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title class="accordion-title">
+                    <mat-icon>schedule</mat-icon> 1. Horario Semanal Ordinario
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <p class="accordion-desc">Define las horas de apertura generales para cada día de la semana. Separa las horas con comas (ej: 10:00, 10:30, 11:00). Deja un día vacío para cerrarlo por completo.</p>
+                
+                <div class="weekly-inputs-grid">
+                  <mat-form-field appearance="outline" class="form-field-gold"><mat-label>Lunes</mat-label><input matInput [(ngModel)]="weeklySchedule[1]"></mat-form-field>
+                  <mat-form-field appearance="outline" class="form-field-gold"><mat-label>Martes</mat-label><input matInput [(ngModel)]="weeklySchedule[2]"></mat-form-field>
+                  <mat-form-field appearance="outline" class="form-field-gold"><mat-label>Miércoles</mat-label><input matInput [(ngModel)]="weeklySchedule[3]"></mat-form-field>
+                  <mat-form-field appearance="outline" class="form-field-gold"><mat-label>Jueves</mat-label><input matInput [(ngModel)]="weeklySchedule[4]"></mat-form-field>
+                  <mat-form-field appearance="outline" class="form-field-gold"><mat-label>Viernes</mat-label><input matInput [(ngModel)]="weeklySchedule[5]"></mat-form-field>
+                  <mat-form-field appearance="outline" class="form-field-gold"><mat-label>Sábado</mat-label><input matInput [(ngModel)]="weeklySchedule[6]"></mat-form-field>
+                  <mat-form-field appearance="outline" class="form-field-gold"><mat-label>Domingo</mat-label><input matInput [(ngModel)]="weeklySchedule[0]"></mat-form-field>
+                </div>
+              </mat-expansion-panel>
+
+              <!-- 2. Horarios Especiales por Fecha (Excepciones del cliente) -->
+              <mat-expansion-panel [expanded]="true">
+                <mat-expansion-panel-header>
+                  <mat-panel-title class="accordion-title">
+                    <mat-icon>event_note</mat-icon> 2. Horarios Especiales por Fecha
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <p class="accordion-desc"><strong>¿Quieres abrir más horas o cancelar horas sueltas un día concreto sin cambiar el horario de toda la semana?</strong> Elige el día aquí abajo y simplemente activa o desactiva las horas en la cuadrícula.</p>
+                
+                <div class="exception-date-selector-wrapper">
+                  <mat-form-field appearance="outline" class="form-field-gold">
+                    <mat-label>Selecciona un día para personalizar</mat-label>
+                    <input matInput [matDatepicker]="pickerException" (dateChange)="onExceptionDateSelected($event.value)" readonly>
+                    <mat-datepicker-toggle matIconSuffix [for]="pickerException"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerException></mat-datepicker>
+                  </mat-form-field>
+                  
+                  <button *ngIf="selectedExceptionDate" mat-stroked-button class="btn-reset-default" (click)="resetToDefaultSchedule()">
+                    <mat-icon>restore</mat-icon> Usar horario semanal
+                  </button>
+                </div>
+
+                @if (selectedExceptionDate) {
+                  <div class="exception-slots-wrapper fade-in">
+                    <h5 class="exception-slots-title">
+                      Configuración horaria para el <span>{{ selectedExceptionDate | date:'dd/MM/yyyy' }}</span>:
+                    </h5>
+                    
+                    <div class="slots-grid-interactive">
+                      @for (slot of allPossibleSlots; track slot) {
+                        <button type="button"
+                                class="interactive-slot-btn"
+                                [class.active]="isExceptionSlotActive(slot)"
+                                (click)="toggleExceptionSlot(slot)">
+                          <mat-icon class="slot-icon">{{ isExceptionSlotActive(slot) ? 'lock_open' : 'lock' }}</mat-icon>
+                          <span>{{ slot }}</span>
+                        </button>
+                      }
+                    </div>
+
+                    <div class="slots-legend">
+                      <span class="legend-item"><span class="legend-dot active"></span> Abierto (Disponible)</span>
+                      <span class="legend-item"><span class="legend-dot inactive"></span> Cerrado / Cancelado</span>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="no-date-selected-state">
+                    <mat-icon>touch_app</mat-icon>
+                    <p>Selecciona una fecha arriba para ver y personalizar sus horas en la cuadrícula táctil.</p>
+                  </div>
+                }
+              </mat-expansion-panel>
+
+              <!-- 3. Cerrar por Vacaciones -->
+              <mat-expansion-panel>
+                <mat-expansion-panel-header>
+                  <mat-panel-title class="accordion-title">
+                    <mat-icon>event_busy</mat-icon> 3. Cerrar Días Completos (Vacaciones / Festivos)
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+                <p class="accordion-desc">Bloquea días enteros del calendario (ej: vacaciones, puentes, indisposición). Los clientes no verán estos días disponibles para reservar.</p>
+                
+                <div class="holiday-picker-row">
+                  <mat-form-field appearance="outline" class="form-field-gold">
+                    <mat-label>Día a cerrar por completo</mat-label>
+                    <input matInput [matDatepicker]="pickerHoliday" [(ngModel)]="dateToBlock" readonly>
+                    <mat-datepicker-toggle matIconSuffix [for]="pickerHoliday"></mat-datepicker-toggle>
+                    <mat-datepicker #pickerHoliday></mat-datepicker>
+                  </mat-form-field>
+                  <button mat-raised-button class="btn-action-danger-solid" (click)="addBlockedDate()">
+                    <mat-icon>block</mat-icon> Cerrar Día
+                  </button>
+                </div>
+
+                @if (blockedDates.length > 0) {
+                  <div class="blocked-dates-list-wrapper">
+                    <h5 class="blocked-dates-title">Días cerrados actualmente:</h5>
+                    <div class="blocked-dates-chips">
+                      @for (date of blockedDates; track date) {
+                        <span class="holiday-chip">
+                          <mat-icon class="chip-calendar-icon">calendar_today</mat-icon>
+                          {{ date | date:'dd/MM/yyyy' }} 
+                          <mat-icon class="chip-remove-icon" (click)="removeBlockedDate(date)" title="Desbloquear día">close</mat-icon>
+                        </span>
+                      }
+                    </div>
+                  </div>
+                }
+              </mat-expansion-panel>
+
+            </mat-accordion>
+          </mat-card-content>
+
+          <mat-card-actions align="end" class="settings-actions-bar">
+            <button mat-raised-button class="btn-premium-gold-save" (click)="saveAdminSettings()" [disabled]="isSaving">
+              <mat-icon>{{ isSaving ? 'hourglass_empty' : 'save' }}</mat-icon>
+              <span>{{ isSaving ? 'Guardando...' : 'Guardar Todos los Ajustes' }}</span>
+            </button>
+          </mat-card-actions>
+        </mat-card>
+
+      </div>
+    }
+
+  </div>
+
+  <!-- Sección de Reseñas (Opiniones) -->
+  <div id="reviews-section" class="reviews-section">
+    <div class="section-header">
+      <h2>Opiniones de los clientes</h2>
+      
+      <div class="rating-summary" *ngIf="totalReviews > 0">
+        <span class="rating-number">{{ averageRating }}</span>
+        <div class="stars">
+          @for (star of [1, 2, 3, 4, 5]; track star) {
+            <mat-icon class="star-gold">
+              {{ star <= averageRating ? 'star' : (star - 0.5 <= averageRating ? 'star_half' : 'star_border') }}
+            </mat-icon>
           }
+        </div>
+        <span class="rating-count">Basado en {{ totalReviews }} {{ totalReviews === 1 ? 'opinión' : 'opiniones' }}</span>
+      </div>
+      
+      <div class="rating-summary" *ngIf="totalReviews === 0">
+        <span class="rating-number">5.0</span>
+        <div class="stars">
+          <mat-icon class="star-gold">star</mat-icon>
+          <mat-icon class="star-gold">star</mat-icon>
+          <mat-icon class="star-gold">star</mat-icon>
+          <mat-icon class="star-gold">star</mat-icon>
+          <mat-icon class="star-gold">star</mat-icon>
+        </div>
+        <span class="rating-count">No hay valoraciones todavía</span>
+      </div>
+    </div>
+
+    <!-- Lista de opiniones recibidas -->
+    <div class="reviews-list">
+      @for (review of reviews; track review.id) {
+        <div class="review-card">
+          <div class="review-header">
+            <div class="reviewer-avatar">
+              {{ (review.clientName || 'U').charAt(0).toUpperCase() }}
+            </div>
+            <div class="reviewer-info">
+              <span class="reviewer-name">{{ review.clientName }}</span>
+              <span class="verified-badge">
+                <mat-icon class="verified-icon">verified</mat-icon> Cliente verificado
+              </span>
+            </div>
+            <div class="review-stars">
+              @for (star of [1, 2, 3, 4, 5]; track star) {
+                <mat-icon class="star-gold">
+                  {{ star <= review.rating ? 'star' : 'star_border' }}
+                </mat-icon>
+              }
+            </div>
+            
+            <!-- El Admin puede borrar comentarios no deseados -->
+            <button mat-icon-button class="btn-delete-review" (click)="deleteReview(review.id!)" title="Eliminar reseña de forma permanente">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+          <p class="review-comment">"{{ review.comment || 'Sin comentarios, solo valoración de estrellas.' }}"</p>
+          <span class="review-date">{{ review.date | date:'dd/MM/yyyy' }}</span>
+        </div>
+      } @empty {
+        <div style="text-align: center; padding: 40px; color: #666; font-style: italic;">
+          No hay valoraciones disponibles todavía.
         </div>
       }
     </div>
   </div>
+
 </div>

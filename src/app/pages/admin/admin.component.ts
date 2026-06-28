@@ -1,24 +1,30 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { AppointmentService, Appointment } from '../../shared/services/appointment.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { ReviewService, Review } from '../../shared/services/review.service';
 import { BaseChartDirective } from 'ng2-charts';
 import { environment } from '../../../environments/environment';
-// IMPORTACIONES VITALES PARA LEER FIREBASE DIRECTAMENTE AQUÍ
 import { Firestore, collection, query, where, getDocs } from '@angular/fire/firestore';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
   imports: [
-    CommonModule, MatCardModule, MatIconModule, MatButtonModule, 
-    MatDividerModule, MatDatepickerModule, MatNativeDateModule, BaseChartDirective
+    CommonModule, FormsModule, MatCardModule, MatIconModule, MatButtonModule, 
+    MatDividerModule, MatDatepickerModule, MatNativeDateModule, BaseChartDirective,
+    MatFormFieldModule, MatInputModule, MatExpansionModule
   ],
   providers: [DatePipe],
   templateUrl: './admin.component.html',
@@ -28,15 +34,49 @@ export class AdminComponent implements OnInit {
   private appointmentService = inject(AppointmentService);
   private datePipe = inject(DatePipe);
   private authService = inject(AuthService);
-  private firestore = inject(Firestore); // <--- INYECCIÓN DE FIRESTORE AÑADIDA
+  private reviewService = inject(ReviewService);
+  private firestore = inject(Firestore);
 
+  // Stats KPIs
   totalCuts: number = 0;
+  totalClients: number = 0;
+  cancellationRate: number = 0;
+  busiestDay: string = 'N/A';
+  busiestHour: string = 'N/A';
+  vipClients: { name: string, count: number }[] = [];
+
+  // Calendar & Appointments
   selectedDate: Date = new Date();
   dailyAppointments: Appointment[] = [];
   pendingRequests: Appointment[] = []; 
 
-  mostrarGrafica = false;
-  datosGrafica: any = null;
+  // Reviews
+  reviews: Review[] = [];
+  averageRating: number = 5.0;
+  totalReviews: number = 0;
+
+  // Segmented Tabs
+  activeTab: 'calendar' | 'stats' | 'settings' = 'calendar';
+
+  // Ajustes de la Barbería
+  blockedDates: string[] = [];
+  dateToBlock: Date | null = null;
+  weeklySchedule: any = { 0:'', 1:'', 2:'', 3:'', 4:'', 5:'', 6:'' };
+  customDays: any = {};
+  selectedExceptionDate: Date | null = null;
+  exceptionSlotsForSelectedDate: string[] = [];
+  isSaving: boolean = false;
+
+  allPossibleSlots: string[] = [
+    '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
+    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30',
+    '20:00', '20:30', '21:00', '21:30'
+  ];
+
+  mostrarGrafica = true; // Mostradas por defecto en su sección
+  datosGraficaMensual: any = null;
+  datosGraficaSemanal: any = null;
   opcionesGrafica: any = {
     responsive: true,
     maintainAspectRatio: false,
@@ -44,13 +84,13 @@ export class AdminComponent implements OnInit {
       y: { 
         beginAtZero: true, 
         ticks: { 
-          stepSize: 25 // Obliga a la gráfica a saltar de 25 en 25
+          stepSize: 5
         } 
       },
       x: {
         ticks: {
-          autoSkip: false, // Prohíbe que la gráfica oculte meses por falta de espacio
-          maxRotation: 45, // Inclina los textos un poco si la pantalla es estrecha
+          autoSkip: false,
+          maxRotation: 45,
           minRotation: 45
         }
       }
@@ -58,10 +98,18 @@ export class AdminComponent implements OnInit {
   };
 
   async ngOnInit() {
-    this.totalCuts = await this.appointmentService.getTotalCompletedCuts();
     this.pendingRequests = await this.appointmentService.getAllPendingAppointments(); 
-    this.cargarEstadisticas();
+    await this.cargarEstadisticas();
+    await this.loadReviews();
     
+    // Cargar Ajustes
+    const settings = await this.appointmentService.getBarbershopSettings();
+    if (settings) {
+      this.blockedDates = settings.blockedDates || [];
+      this.weeklySchedule = settings.weeklySchedule || this.weeklySchedule;
+      this.customDays = settings.customDays || {};
+    }
+
     await this.loadPhoneNumbers(this.pendingRequests);
     await this.onDateSelected(this.selectedDate);
   }
@@ -94,13 +142,44 @@ export class AdminComponent implements OnInit {
   async changeStatus(id: string | undefined, newStatus: 'confirmed' | 'cancelled' | 'completed') {
     if (!id) return;
     
-    const messages = {
-      'confirmed': '¿Aceptar esta cita?',
-      'cancelled': '¿Rechazar y anular esta cita?',
-      'completed': '¿Marcar este corte como terminado?'
+    const swalConfigs = {
+      'confirmed': {
+        title: '¿Aceptar esta cita?',
+        text: 'Se confirmará la reserva para el cliente.',
+        icon: 'question' as const,
+        confirmButtonText: 'Sí, aceptar',
+        confirmButtonColor: '#2e7d32'
+      },
+      'cancelled': {
+        title: '¿Rechazar y anular esta cita?',
+        text: 'Esta acción cancelará la cita de forma permanente.',
+        icon: 'warning' as const,
+        confirmButtonText: 'Sí, rechazar',
+        confirmButtonColor: '#c62828'
+      },
+      'completed': {
+        title: '¿Marcar este corte como terminado?',
+        text: 'Se registrará como un servicio completado.',
+        icon: 'question' as const,
+        confirmButtonText: 'Sí, terminar',
+        confirmButtonColor: '#c5a059'
+      }
     };
 
-    if (!confirm(messages[newStatus])) return;
+    const config = swalConfigs[newStatus];
+    const result = await Swal.fire({
+      title: config.title,
+      text: config.text,
+      icon: config.icon,
+      showCancelButton: true,
+      confirmButtonColor: config.confirmButtonColor,
+      cancelButtonColor: '#1c1b18',
+      confirmButtonText: config.confirmButtonText,
+      cancelButtonText: 'Cancelar',
+      background: '#ffffff'
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       await this.appointmentService.updateAppointmentStatus(id, newStatus);
@@ -131,26 +210,307 @@ export class AdminComponent implements OnInit {
 
       if (newStatus === 'completed') {
         this.totalCuts++; 
-        this.cargarEstadisticas(); // Recarga la gráfica automáticamente si termina un corte
+        await this.cargarEstadisticas(); // Recarga la gráfica automáticamente si termina un corte
       }
+
+      Swal.fire({
+        title: newStatus === 'confirmed' ? 'Cita Aceptada' : (newStatus === 'cancelled' ? 'Cita Cancelada' : 'Corte Terminado'),
+        text: newStatus === 'confirmed' ? 'La cita ha sido aceptada correctamente.' : (newStatus === 'cancelled' ? 'La cita ha sido cancelada.' : 'El servicio se ha marcado como completado.'),
+        icon: 'success',
+        confirmButtonColor: '#c5a059',
+        timer: 2000
+      });
       
     } catch (error) {
-      alert('Error al actualizar la cita.');
+      Swal.fire({
+        title: 'Error',
+        text: 'Hubo un problema al actualizar el estado de la cita.',
+        icon: 'error',
+        confirmButtonColor: '#c5a059'
+      });
     }
   }
 
   async cargarEstadisticas() {
-    const citasRef = collection(this.firestore, 'appointments');
-    const q = query(citasRef, where('status', '==', 'completed'));
-    const querySnapshot = await getDocs(q);
-    
-    // Tipado estricto (doc: any) para que el compilador no salte
-    const citasCompletadas = querySnapshot.docs.map((doc: any) => doc.data() as Appointment);
+    try {
+      const citasRef = collection(this.firestore, 'appointments');
+      const querySnapshot = await getDocs(citasRef);
+      
+      const todasLasCitas = querySnapshot.docs.map((doc: any) => ({
+        id: doc.id,
+        ...doc.data()
+      } as Appointment));
 
-    this.datosGrafica = this.appointmentService.obtenerEstadisticasMensuales(citasCompletadas);
+      const citasCompletadas = todasLasCitas.filter(c => c.status === 'completed');
+      const citasCanceladas = todasLasCitas.filter(c => c.status === 'cancelled');
+      
+      this.totalCuts = citasCompletadas.length;
+
+      // 1. Tasa de cancelación
+      const totalCitasValidas = citasCompletadas.length + citasCanceladas.length;
+      this.cancellationRate = totalCitasValidas > 0 
+        ? Math.round((citasCanceladas.length / totalCitasValidas) * 100) 
+        : 0;
+
+      // 2. Clientes únicos
+      const clientesUnicos = new Set(citasCompletadas.map(c => c.clientId));
+      this.totalClients = clientesUnicos.size;
+
+      // 3. Día de la semana más concurrido y conteo semanal
+      const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+      const conteoDias = new Array(7).fill(0);
+      
+      // 4. Hora más concurrida
+      const conteoHoras: { [hora: string]: number } = {};
+
+      // 5. Clientes VIP
+      const conteoClientes: { [clientId: string]: { name: string, count: number } } = {};
+
+      citasCompletadas.forEach(cita => {
+        const fecha = new Date(cita.date);
+        const diaIndex = fecha.getDay();
+        if (!isNaN(diaIndex)) {
+          conteoDias[diaIndex]++;
+        }
+
+        if (cita.time) {
+          conteoHoras[cita.time] = (conteoHoras[cita.time] || 0) + 1;
+        }
+
+        if (cita.clientId) {
+          if (!conteoClientes[cita.clientId]) {
+            conteoClientes[cita.clientId] = { name: cita.clientName || 'Cliente Anónimo', count: 0 };
+          }
+          conteoClientes[cita.clientId].count++;
+        }
+      });
+
+      let maxDiaIndex = 1;
+      let maxDiaCortes = 0;
+      for (let i = 1; i < 7; i++) {
+        if (conteoDias[i] > maxDiaCortes) {
+          maxDiaCortes = conteoDias[i];
+          maxDiaIndex = i;
+        }
+      }
+      this.busiestDay = maxDiaCortes > 0 ? diasSemana[maxDiaIndex] : 'Ninguno';
+
+      let maxHora = 'N/A';
+      let maxHoraCortes = 0;
+      Object.keys(conteoHoras).forEach(hora => {
+        if (conteoHoras[hora] > maxHoraCortes) {
+          maxHoraCortes = conteoHoras[hora];
+          maxHora = hora;
+        }
+      });
+      this.busiestHour = maxHoraCortes > 0 ? `${maxHora} h` : 'N/A';
+
+      this.vipClients = Object.values(conteoClientes)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      this.datosGraficaMensual = this.appointmentService.obtenerEstadisticasMensuales(citasCompletadas);
+
+      this.datosGraficaSemanal = {
+        labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+        datasets: [{
+          data: [conteoDias[1], conteoDias[2], conteoDias[3], conteoDias[4], conteoDias[5], conteoDias[6]],
+          label: 'Cortes por día de la semana',
+          backgroundColor: '#c5a059',
+          borderRadius: 6
+        }]
+      };
+
+    } catch (error) {
+      console.error('Error al cargar estadísticas avanzadas:', error);
+    }
   }
 
-  toggleGrafica() {
-    this.mostrarGrafica = !this.mostrarGrafica;
+  async loadReviews() {
+    this.reviews = await this.reviewService.getReviews();
+    this.totalReviews = this.reviews.length;
+    if (this.totalReviews > 0) {
+      const sum = this.reviews.reduce((acc, r) => acc + r.rating, 0);
+      this.averageRating = parseFloat((sum / this.totalReviews).toFixed(1));
+    } else {
+      this.averageRating = 5.0;
+    }
+  }
+
+  async deleteReview(reviewId: string) {
+    const result = await Swal.fire({
+      title: '¿Eliminar reseña?',
+      text: 'Esta acción no se puede deshacer y borrará la opinión de forma permanente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#c62828',
+      cancelButtonColor: '#1c1b18',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      background: '#ffffff'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await this.reviewService.deleteReview(reviewId);
+        Swal.fire({
+          title: 'Eliminada',
+          text: 'La reseña ha sido eliminada correctamente.',
+          icon: 'success',
+          confirmButtonColor: '#c5a059',
+          timer: 2000
+        });
+        await this.loadReviews();
+      } catch (error) {
+        console.error('Error al eliminar la reseña:', error);
+        Swal.fire({
+          title: 'Error',
+          text: 'No se pudo eliminar la reseña.',
+          icon: 'error',
+          confirmButtonColor: '#c5a059'
+        });
+      }
+    }
+  }
+
+  setActiveTab(tab: 'calendar' | 'stats' | 'settings') {
+    this.activeTab = tab;
+    setTimeout(() => {
+      const element = document.getElementById('admin-content-section');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 50);
+  }
+
+  scrollToReviews() {
+    const element = document.getElementById('reviews-section');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  // --- LÓGICA DE DÍAS CERRADOS (Vacaciones) ---
+  addBlockedDate() {
+    if (this.dateToBlock) {
+      const dateStr = this.datePipe.transform(this.dateToBlock, 'yyyy-MM-dd');
+      if (dateStr && !this.blockedDates.includes(dateStr)) {
+        this.blockedDates.push(dateStr);
+        this.blockedDates.sort();
+        
+        Swal.fire({
+          title: 'Día Bloqueado',
+          text: `Se ha cerrado la barbería para el día ${this.datePipe.transform(this.dateToBlock, 'dd/MM/yyyy')}.`,
+          icon: 'success',
+          confirmButtonColor: '#c5a059',
+          timer: 2000
+        });
+      }
+      this.dateToBlock = null; 
+    }
+  }
+
+  removeBlockedDate(dateStr: string) {
+    this.blockedDates = this.blockedDates.filter(d => d !== dateStr);
+    Swal.fire({
+      title: 'Día Desbloqueado',
+      text: 'El día seleccionado vuelve a estar disponible según su horario habitual.',
+      icon: 'success',
+      confirmButtonColor: '#c5a059',
+      timer: 2000
+    });
+  }
+
+  // --- HORARIOS ESPECIALES POR FECHA (SOLUCIÓN AL CLIENTE) ---
+  onExceptionDateSelected(date: Date | null) {
+    this.selectedExceptionDate = date;
+    if (!date) {
+      this.exceptionSlotsForSelectedDate = [];
+      return;
+    }
+    const dateStr = this.datePipe.transform(date, 'yyyy-MM-dd') || '';
+    
+    // Si ya existe un horario personalizado para este día, lo cargamos
+    if (this.customDays[dateStr] !== undefined) {
+      const slotsStr = this.customDays[dateStr] || '';
+      this.exceptionSlotsForSelectedDate = slotsStr.split(',').map((s: string) => s.trim()).filter((s: string) => s);
+    } else {
+      // Si no, cargamos el horario por defecto para ese día de la semana
+      const dayOfWeek = date.getDay();
+      const slotsStr = this.weeklySchedule[dayOfWeek] || '';
+      this.exceptionSlotsForSelectedDate = slotsStr.split(',').map((s: string) => s.trim()).filter((s: string) => s);
+    }
+  }
+
+  toggleExceptionSlot(slot: string) {
+    if (!this.selectedExceptionDate) return;
+    
+    const index = this.exceptionSlotsForSelectedDate.indexOf(slot);
+    if (index > -1) {
+      // Si está activo, lo quitamos (lo cancelamos)
+      this.exceptionSlotsForSelectedDate.splice(index, 1);
+    } else {
+      // Si no está, lo añadimos (abrimos esa hora) y ordenamos
+      this.exceptionSlotsForSelectedDate.push(slot);
+      this.exceptionSlotsForSelectedDate.sort((a, b) => a.localeCompare(b));
+    }
+    
+    // Guardamos en nuestro objeto temporal customDays
+    const dateStr = this.datePipe.transform(this.selectedExceptionDate, 'yyyy-MM-dd') || '';
+    this.customDays[dateStr] = this.exceptionSlotsForSelectedDate.join(',');
+  }
+
+  isExceptionSlotActive(slot: string): boolean {
+    return this.exceptionSlotsForSelectedDate.includes(slot);
+  }
+
+  resetToDefaultSchedule() {
+    if (!this.selectedExceptionDate) return;
+    const dateStr = this.datePipe.transform(this.selectedExceptionDate, 'yyyy-MM-dd') || '';
+    
+    // Eliminamos la excepción horaria de esta fecha
+    delete this.customDays[dateStr];
+    
+    // Recargamos las horas del día de la semana correspondientes
+    const dayOfWeek = this.selectedExceptionDate.getDay();
+    const slotsStr = this.weeklySchedule[dayOfWeek] || '';
+    this.exceptionSlotsForSelectedDate = slotsStr.split(',').map((s: string) => s.trim()).filter((s: string) => s);
+    
+    Swal.fire({
+      title: 'Horario Reestablecido',
+      text: 'Se ha vuelto a aplicar el horario semanal ordinario para este día.',
+      icon: 'success',
+      confirmButtonColor: '#c5a059',
+      timer: 2000
+    });
+  }
+
+  // GUARDA TODOS LOS AJUSTES DEL JEFE EN FIRESTORE
+  async saveAdminSettings() {
+    this.isSaving = true;
+    try {
+      await this.appointmentService.saveBarbershopSettings({
+        blockedDates: this.blockedDates,
+        weeklySchedule: this.weeklySchedule,
+        customDays: this.customDays
+      });
+      
+      Swal.fire({
+        title: '¡Ajustes Guardados!',
+        text: 'Los horarios y vacaciones se han actualizado correctamente.',
+        icon: 'success',
+        confirmButtonColor: '#c5a059',
+        timer: 2500
+      });
+    } catch (e) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Hubo un problema al guardar la configuración.',
+        icon: 'error',
+        confirmButtonColor: '#c5a059'
+      });
+    } finally {
+      this.isSaving = false;
+    }
   }
 }

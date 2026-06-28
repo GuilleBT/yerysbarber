@@ -1,19 +1,144 @@
 <div class="welcome-container">
-  <div class="branding">
-    <img src="assets/logo.png" alt="YerysBarber Logo" class="brand-logo">
-    <h1>YerysBarber</h1>
-    <p>Tu estilo, a tu medida.</p>
+  <!-- Hero Section -->
+  <div class="hero-section">
+      <div class="branding">
+        <img src="assets/logo.png" alt="YerysBarber Logo" class="brand-logo">
+        <h1>YerysBarber</h1>
+        <div class="brand-divider">
+          <span class="line"></span>
+          <mat-icon class="divider-icon">star</mat-icon>
+          <span class="line"></span>
+        </div>
+        <p>Tu estilo, a tu medida.</p>
+      </div>
+
+      <div class="actions">
+        <button mat-raised-button class="btn-gold" routerLink="/reservar">
+          <mat-icon>calendar_today</mat-icon>
+          Pedir Cita
+        </button>
+
+        <button mat-stroked-button class="btn-outline" routerLink="/mis-citas">
+          <mat-icon>history</mat-icon>
+          Mis Citas
+        </button>
+      </div>
+
+    <!-- Scroll Down indicator -->
+    <div class="scroll-indicator" (click)="scrollToReviews()">
+      <span class="scroll-text">Opiniones de clientes</span>
+      <mat-icon class="scroll-arrow">keyboard_arrow_down</mat-icon>
+    </div>
   </div>
 
-  <div class="actions">
-    <button mat-raised-button class="btn-gold" routerLink="/reservar">
-      <mat-icon>calendar_today</mat-icon>
-      Pedir Cita
-    </button>
+  <!-- Reviews Section -->
+  <div id="reviews-section" class="reviews-section">
+    <div class="section-header">
+      <h2>Lo que dicen de nosotros</h2>
+      <div class="rating-summary" *ngIf="totalReviews > 0">
+        <span class="rating-number">{{ averageRating }}</span>
+        <div class="stars">
+          @for (star of [1, 2, 3, 4, 5]; track star) {
+            <mat-icon class="star-gold">
+              {{ star <= averageRating ? 'star' : (star - 0.5 <= averageRating ? 'star_half' : 'star_border') }}
+            </mat-icon>
+          }
+        </div>
+        <span class="rating-count">Basado en {{ totalReviews }} {{ totalReviews === 1 ? 'opinión' : 'opiniones' }}</span>
+      </div>
+      <div class="rating-summary" *ngIf="totalReviews === 0">
+        <span class="rating-number">5.0</span>
+        <div class="stars">
+          <mat-icon class="star-gold">star</mat-icon>
+          <mat-icon class="star-gold">star</mat-icon>
+          <mat-icon class="star-gold">star</mat-icon>
+          <mat-icon class="star-gold">star</mat-icon>
+          <mat-icon class="star-gold">star</mat-icon>
+        </div>
+        <span class="rating-count">Sé el primero en valorar</span>
+      </div>
+    </div>
 
-    <button mat-stroked-button class="btn-outline" routerLink="/mis-citas">
-      <mat-icon>history</mat-icon>
-      Mis Citas
-    </button>
+    <div class="reviews-list">
+      @for (review of reviews; track review.id) {
+        <div class="review-card">
+          <div class="review-header">
+            <div class="reviewer-avatar">
+              {{ (review.clientName || 'U').charAt(0).toUpperCase() }}
+            </div>
+            <div class="reviewer-info">
+              <span class="reviewer-name">{{ review.clientName }}</span>
+              <span class="verified-badge">
+                <mat-icon class="verified-icon">verified</mat-icon> Cliente verificado
+              </span>
+            </div>
+            <div class="review-stars">
+              @for (star of [1, 2, 3, 4, 5]; track star) {
+                <mat-icon class="star-gold">
+                  {{ star <= review.rating ? 'star' : 'star_border' }}
+                </mat-icon>
+              }
+            </div>
+            
+            <!-- Botón de borrar para el admin -->
+            @if (isAdmin) {
+              <button mat-icon-button class="btn-delete-review" (click)="deleteReview(review.id!)" title="Eliminar reseña">
+                <mat-icon>delete</mat-icon>
+              </button>
+            }
+          </div>
+          <p class="review-comment">"{{ review.comment || 'Sin comentarios, solo valoración de estrellas.' }}"</p>
+          <span class="review-date">{{ review.date | date:'dd/MM/yyyy' }}</span>
+        </div>
+      } @empty {
+        <div style="text-align: center; padding: 40px; color: #666; font-style: italic;">
+          No hay valoraciones disponibles todavía.
+        </div>
+      }
+    </div>
   </div>
 </div>
+
+<!-- Modal Flotante de Valoración para Clientes -->
+@if (pendingReviewAppointment) {
+  <div class="review-modal-overlay">
+    <div class="review-modal-card">
+      <div class="modal-header">
+        <div class="logo-circle">
+          <mat-icon class="modal-logo-icon">star</mat-icon>
+        </div>
+        <h3>¿Cómo fue tu experiencia?</h3>
+        <p>Valorar tu corte del día <strong>{{ pendingReviewAppointment.date | date:'dd/MM/yyyy' }}</strong> a las <strong>{{ pendingReviewAppointment.time }} h</strong></p>
+      </div>
+
+      <div class="stars-rating-container">
+        @for (star of [1, 2, 3, 4, 5]; track star) {
+          <button type="button" class="star-btn" (click)="selectRating(star)" title="Valorar con {{ star }} estrellas">
+            <mat-icon [class.selected]="star <= selectedRating">
+              {{ star <= selectedRating ? 'star' : 'star_border' }}
+            </mat-icon>
+          </button>
+        }
+      </div>
+
+      <div class="comment-input-container">
+        <textarea 
+          [(ngModel)]="reviewComment" 
+          placeholder="Escribe una breve opinión sobre el trato y el corte..." 
+          rows="3"
+          maxlength="200">
+        </textarea>
+        <span class="char-counter">{{ (reviewComment || '').length }}/200</span>
+      </div>
+
+      <div class="modal-actions">
+        <button mat-stroked-button class="btn-skip" (click)="skipReview()" [disabled]="isSavingReview">
+          Omitir
+        </button>
+        <button mat-raised-button class="btn-submit" (click)="submitReview()" [disabled]="isSavingReview">
+          {{ isSavingReview ? 'Guardando...' : 'Enviar opinión' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

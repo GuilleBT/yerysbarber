@@ -1,15 +1,17 @@
 @use "sass:color";
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
 
-// ── Variables ───────────────────────────────────────────────────────────────
-$gold:       #c9a54b;
-$dark:       #1a1a1a;
-$text:       #1e1e1e;
-$text-soft:  #666;
-$gray-bg:    #fcf9f5;
-$card-bg:    #ffffff;
-$border:     rgba(#c9a54b, 0.14);
-$radius:     14px;
+// ── Variables Premium (Modo Claro de Lujo) ──────────────────────────────────
+$gold:       #c5a059; // Champagne dorado de lujo
+$gold-light: #dfbe7e;
+$dark:       #1c1b18; // Negro carbón profundo
+$text:       #111111; // Texto principal negro
+$text-soft:  #444444; // Gris oscuro
+$gray-bg:    #fdfcf9; // Blanco cálido de fondo
+$card-bg:    rgba(255, 255, 255, 0.92); // Cristal blanco translúcido
+$border:     rgba(197, 160, 89, 0.25);
+$radius:     20px;
+$white:      #ffffff;
 
 // ── Keyframes ───────────────────────────────────────────────────────────────
 
@@ -23,26 +25,60 @@ $radius:     14px;
   to   { opacity: 1; }
 }
 
-// Icono del empty-state: flotación continua
 @keyframes floatIcon {
   0%, 100% { transform: translateY(0); }
   50%       { transform: translateY(-8px); }
 }
 
-// Spinner propio del loading
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
 // ── Contenedor ───────────────────────────────────────────────────────────────
 .appointments-container {
-  padding: 24px 16px 48px;
+  padding: 30px 16px 50px;
   max-width: 620px;
   margin: 0 auto;
   font-family: 'Montserrat', sans-serif;
-  background: $gray-bg;
   min-height: calc(100vh - 60px);
+  position: relative;
+  overflow: hidden;
   animation: fadeIn 0.4s ease both;
+
+  @media (min-width: 768px) {
+    min-height: calc(100vh - 70px);
+    padding: 40px 24px 60px;
+  }
+
+  // Foto de la silla de la barbería de fondo (Claro)
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url('../../../assets/booking-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.65;
+    filter: brightness(0.97) contrast(1.02) blur(1px); // Tono claro con desenfoque suave
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  // Capa de degradado claro
+  &::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba($gray-bg, 0.25) 0%,
+      rgba($gray-bg, 0.5) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  > * { position: relative; z-index: 2; }
 }
 
 // ── Título de página ──────────────────────────────────────────────────────────
@@ -51,19 +87,21 @@ $radius:     14px;
   font-size: 34px;
   font-weight: 700;
   text-align: center;
-  color: $text;
+  color: $gold; // Sello de firma dorado
   margin-bottom: 28px;
   letter-spacing: 0.5px;
+  text-shadow: 
+    0 1px 2px rgba($white, 0.95), 
+    0 2px 10px rgba($white, 0.7);
 
   animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
 
-  // Línea dorada decorativa
   &::after {
     content: '';
     display: block;
     width: 40px;
     height: 2px;
-    background: linear-gradient(90deg, $gold, color.adjust($gold, $lightness: 10%));
+    background: linear-gradient(90deg, $gold, $gold-light);
     margin: 10px auto 0;
     border-radius: 2px;
   }
@@ -73,7 +111,7 @@ $radius:     14px;
 .section-title {
   font-family: 'Montserrat', sans-serif;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   color: $text-soft;
   letter-spacing: 3px;
   text-transform: uppercase;
@@ -83,6 +121,7 @@ $radius:     14px;
   display: flex;
   align-items: center;
   gap: 10px;
+  text-shadow: 0 1px 2px rgba($white, 0.9);
 
   &::before {
     content: '';
@@ -110,9 +149,10 @@ $radius:     14px;
 
   p {
     font-size: 15px;
-    font-weight: 400;
+    font-weight: 600;
     margin: 0;
     letter-spacing: 0.3px;
+    text-shadow: 0 1px 4px rgba($white, 0.8);
   }
 }
 
@@ -120,15 +160,17 @@ $radius:     14px;
   font-size: 64px !important;
   height: 64px !important;
   width: 64px !important;
-  color: rgba($gold, 0.4) !important;
+  color: rgba($gold, 0.5) !important;
+  filter: drop-shadow(0 1px 2px rgba($white, 0.8));
 
   animation: floatIcon 3s ease-in-out infinite;
 }
 
 .empty-state .btn-gold {
   margin-top: 8px;
-  background: linear-gradient(135deg, $gold, color.adjust($gold, $lightness: -6%)) !important;
-  color: $dark !important;
+  background: $dark !important; // Negro carbón de lujo
+  color: $white !important;
+  border: 1.5px solid $gold !important;
   font-family: 'Montserrat', sans-serif;
   font-size: 13px;
   font-weight: 600;
@@ -137,11 +179,17 @@ $radius:     14px;
   border-radius: 28px !important;
   padding: 0 28px !important;
   height: 48px;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
 
   &:hover {
-    box-shadow: 0 8px 24px rgba($gold, 0.3) !important;
-    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba($gold, 0.3) !important;
+    background: $gold !important;
+    color: #111111 !important;
+  }
+
+  &:active {
+    transform: scale(0.95) !important;
   }
 }
 
@@ -152,30 +200,32 @@ $radius:     14px;
   gap: 14px;
 }
 
-// ── Tarjeta individual ────────────────────────────────────────────────────────
+// ── Tarjeta individual (Cristal de Alabastro) ──────────────────────────────────
 .appointment-card {
   border-radius: $radius !important;
   border: 1px solid $border !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06) !important;
   background: $card-bg !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   overflow: hidden;
   position: relative;
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
-  // Franja izquierda dorada
+  // Franja izquierda dorada decorativa
   &::before {
     content: '';
     position: absolute;
     left: 0;
     top: 0;
     bottom: 0;
-    width: 4px;
-    background: linear-gradient(180deg, $gold, color.adjust($gold, $lightness: -8%));
+    width: 5px;
+    background: linear-gradient(180deg, $gold, $gold-light);
     border-radius: $radius 0 0 $radius;
   }
 
   &:hover {
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.09) !important;
+    box-shadow: 0 20px 45px rgba($gold, 0.08) !important;
     transform: translateY(-2px);
   }
 
@@ -189,19 +239,22 @@ $radius:     14px;
   &:nth-child(4) { animation-delay: 0.32s; }
   &:nth-child(5) { animation-delay: 0.40s; }
   &:nth-child(n+6) { animation-delay: 0.48s; }
+
+  &:active {
+    // Si se pulsa en la tarjeta no se deforma a no ser que sea un botón
+  }
 }
 
-// Tarjetas del historial pasado
+// Tarjetas del historial pasado (Más translúcido)
 .past-card {
-  background-color: #fafafa !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  background-color: rgba(255, 255, 255, 0.65) !important; // Más transparente para historial
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
   box-shadow: none !important;
 
   &::before { 
     background: rgba($text-soft, 0.25); 
   }
 
-  // Animación específica para past-card
   animation: fadeSlideUpPast 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 
   &:hover { 
@@ -209,10 +262,9 @@ $radius:     14px;
     box-shadow: none !important; 
   }
 
-  // Contenido ligeramente atenuado pero legible
   .appt-header .appt-date,
   .appt-body .appt-detail {
-    opacity: 0.75;
+    opacity: 0.7;
   }
 }
 
@@ -223,7 +275,7 @@ $radius:     14px;
     transform: translateY(28px); 
   }
   to { 
-    opacity: 0.85;  // Aumentado de 0.62 a 0.85 para mejor legibilidad
+    opacity: 0.85;
     transform: translateY(0); 
   }
 }
@@ -236,27 +288,24 @@ $radius:     14px;
   margin-bottom: 12px;
 
   .appt-date {
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: 600;
-    font-size: 18px;
+    font-weight: 700 !important;
+    font-size: 15px !important; 
     color: $text;
-    text-transform: capitalize;
-    letter-spacing: 0.3px;
   }
 
   .appt-status {
     font-family: 'Montserrat', sans-serif;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     padding: 4px 12px;
     border-radius: 20px;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
 
     &.pending {
-      background: rgba(#c9a54b, 0.12);
-      color: color.adjust(#c9a54b, $lightness: -15%);
-      border: 1px solid rgba(#c9a54b, 0.25);
+      background: rgba(#c5a059, 0.08);
+      color: $gold;
+      border: 1px solid rgba(#c5a059, 0.25);
     }
     &.confirmed {
       background: rgba(#2e7d32, 0.08);
@@ -283,7 +332,7 @@ $radius:     14px;
     gap: 8px;
     color: $text-soft;
     font-size: 14px;
-    font-weight: 400;
+    font-weight: 500;
 
     mat-icon {
       color: $gold;
@@ -295,30 +344,27 @@ $radius:     14px;
 }
 
 // ── Botón anular ──────────────────────────────────────────────────────────────
-// El botón warn de Material ya viene bien; solo suavizamos la transición
 mat-card-content button[color="warn"] {
   font-family: 'Montserrat', sans-serif !important;
-  font-size: 13px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
   letter-spacing: 0.5px;
-  transition: all 0.25s ease !important;
+  transition: all 0.2s ease !important;
   border-radius: 8px !important;
 
-  &:hover { background: rgba(#c62828, 0.06) !important; }
-}
-/* ========================================= */
-/* LIMPIEZA NUMÉRICA EN HISTORIAL            */
-/* ========================================= */
+  &:hover { 
+    background: rgba(#c62828, 0.06) !important; 
+  }
 
-/* Aplicamos a la fecha y a los detalles de hora */
+  &:active {
+    transform: scale(0.95) !important;
+  }
+}
+
+// ── Limpieza numérica ────────────────────────────────────────────────────────
 .appt-date,
 .appt-detail span {
   font-family: 'Roboto', 'Helvetica Neue', sans-serif !important;
   font-variant-numeric: tabular-nums lining-nums !important;
   letter-spacing: 0.3px;
-}
-
-.appt-date {
-  font-weight: 700 !important;
-  /* Mantenemos un tamaño equilibrado para que no choque con la fuente elegante */
-  font-size: 15px !important; 
 }

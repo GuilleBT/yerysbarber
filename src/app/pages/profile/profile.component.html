@@ -1,86 +1,22 @@
 <div class="profile-container">
   
   @if (isAdmin) {
-    <mat-card class="profile-card admin-card" style="max-width: 700px; padding: 0;">
-      <mat-card-header style="padding: 16px;">
-        <div mat-card-avatar class="header-image admin-icon">
-          <mat-icon>build</mat-icon>
+    <mat-card class="profile-card admin-card" style="max-width: 500px; padding: 24px; text-align: center;">
+      <mat-card-header style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 16px;">
+        <div mat-card-avatar class="header-image admin-icon" style="background: rgba(197, 160, 89, 0.1); border: 1px solid #c5a059; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #c5a059; margin-bottom: 12px;">
+          <mat-icon style="font-size: 32px; width: 32px; height: 32px;">shield</mat-icon>
         </div>
-        <mat-card-title>Panel del Jefe</mat-card-title>
-        <mat-card-subtitle>Ajusta las reglas de la barbería</mat-card-subtitle>
+        <mat-card-title style="font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 700; color: #1c1b18;">Cuenta de Administrador</mat-card-title>
+        <mat-card-subtitle style="color: #666; font-size: 13px; margin-top: 4px;">Sesión iniciada como Yeray (Jefe)</mat-card-subtitle>
       </mat-card-header>
 
-      <mat-card-content class="form-content" style="padding: 0 16px;">
-        <mat-accordion multi="false">
-          
-          <mat-expansion-panel>
-            <mat-expansion-panel-header>
-              <mat-panel-title style="color: #D4AF37; font-weight: bold;"><mat-icon style="margin-right: 8px;">schedule</mat-icon> 1. Horario Semanal</mat-panel-title>
-            </mat-expansion-panel-header>
-            <p style="font-size: 13px; color: #666;">Si dejas un día en blanco, el calendario lo bloqueará entero automáticamente.</p>
-            <mat-form-field appearance="outline" class="full-width"><mat-label>Lunes</mat-label><input matInput [(ngModel)]="weeklySchedule[1]"></mat-form-field>
-            <mat-form-field appearance="outline" class="full-width"><mat-label>Martes</mat-label><input matInput [(ngModel)]="weeklySchedule[2]"></mat-form-field>
-            <mat-form-field appearance="outline" class="full-width"><mat-label>Miércoles</mat-label><input matInput [(ngModel)]="weeklySchedule[3]"></mat-form-field>
-            <mat-form-field appearance="outline" class="full-width"><mat-label>Jueves</mat-label><input matInput [(ngModel)]="weeklySchedule[4]"></mat-form-field>
-            <mat-form-field appearance="outline" class="full-width"><mat-label>Viernes</mat-label><input matInput [(ngModel)]="weeklySchedule[5]"></mat-form-field>
-            <mat-form-field appearance="outline" class="full-width"><mat-label>Sábado</mat-label><input matInput [(ngModel)]="weeklySchedule[6]"></mat-form-field>
-            <mat-form-field appearance="outline" class="full-width"><mat-label>Domingo</mat-label><input matInput [(ngModel)]="weeklySchedule[0]"></mat-form-field>
-          </mat-expansion-panel>
-
-          <mat-expansion-panel>
-            <mat-expansion-panel-header>
-              <mat-panel-title style="color: #D4AF37; font-weight: bold;"><mat-icon style="margin-right: 8px;">do_not_disturb_on</mat-icon> 2. Tachar horas sueltas</mat-panel-title>
-            </mat-expansion-panel-header>
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Selecciona un día específico</mat-label>
-              <input matInput [matDatepicker]="pickerException" (dateChange)="onExceptionDateSelected($event.value)" readonly>
-              <mat-datepicker-toggle matIconSuffix [for]="pickerException"></mat-datepicker-toggle>
-              <mat-datepicker #pickerException></mat-datepicker>
-            </mat-form-field>
-            @if (selectedExceptionDate) {
-              <div style="margin-top: 8px;">
-                <p style="margin-bottom: 8px; font-weight: bold;">Horas del {{ selectedExceptionDate | date:'shortDate' }}:</p>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                  @for (slot of exceptionSlotsForSelectedDate; track slot) {
-                    <button mat-stroked-button [color]="isSlotBlocked(slot) ? 'warn' : ''" [style.background-color]="isSlotBlocked(slot) ? '#ffebee' : ''" [style.text-decoration]="isSlotBlocked(slot) ? 'line-through' : 'none'" (click)="toggleBlockedSlot(slot)">{{ slot }}</button>
-                  }
-                </div>
-              </div>
-            }
-          </mat-expansion-panel>
-
-          <mat-expansion-panel>
-            <mat-expansion-panel-header>
-              <mat-panel-title style="color: #D4AF37; font-weight: bold;"><mat-icon style="margin-right: 8px;">event_busy</mat-icon> 3. Cerrar por Vacaciones</mat-panel-title>
-            </mat-expansion-panel-header>
-            <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 16px;">
-              <mat-form-field appearance="outline" style="flex: 1; margin-bottom: -1.25em;">
-                <mat-label>Día a bloquear</mat-label>
-                <input matInput [matDatepicker]="picker" [(ngModel)]="dateToBlock" readonly>
-                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-              </mat-form-field>
-              <button mat-raised-button color="warn" (click)="addBlockedDate()">Bloquear</button>
-            </div>
-            @if (blockedDates.length > 0) {
-              <div style="background: rgba(0,0,0,0.05); padding: 12px; border-radius: 8px;">
-                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                  @for (date of blockedDates; track date) {
-                    <span style="background: #ffcdd2; color: #b71c1c; padding: 4px 12px; border-radius: 16px; font-size: 13px; display: flex; align-items: center; gap: 4px;">
-                      {{ date | date:'longDate' }} <mat-icon style="font-size: 16px; width: 16px; height: 16px; cursor: pointer;" (click)="removeBlockedDate(date)">close</mat-icon>
-                    </span>
-                  }
-                </div>
-              </div>
-            }
-          </mat-expansion-panel>
-
-        </mat-accordion>
+      <mat-card-content style="font-size: 14px; color: #444; line-height: 1.6; margin-bottom: 24px;">
+        Los ajustes de la barbería (horarios semanales, excepciones por fecha y vacaciones) se han unificado en el panel de control para mayor comodidad.
       </mat-card-content>
 
-      <mat-card-actions align="end" class="actions" style="padding: 16px;">
-        <button mat-raised-button class="btn-gold" (click)="saveAdminSettings()" [disabled]="isSaving">
-          <mat-icon>save</mat-icon> {{ isSaving ? 'Guardando...' : 'Guardar Configuración' }}
+      <mat-card-actions style="padding: 0; display: flex; justify-content: center;">
+        <button mat-raised-button class="btn-gold" routerLink="/admin" style="background: #1c1b18 !important; color: white !important; border: 1.5px solid #c5a059 !important; border-radius: 24px; height: 48px; padding: 0 24px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">
+          <mat-icon style="color: #c5a059; margin-right: 6px;">dashboard</mat-icon> Ir al Panel de Control
         </button>
       </mat-card-actions>
     </mat-card>

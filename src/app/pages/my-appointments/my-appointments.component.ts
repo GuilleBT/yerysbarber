@@ -8,7 +8,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { AppointmentService, Appointment } from '../../shared/services/appointment.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { RouterModule } from '@angular/router';
-import { Router } from 'express';
+import { Analytics, logEvent } from '@angular/fire/analytics';
 
 @Component({
   selector: 'app-my-appointments',
@@ -28,7 +28,9 @@ import { Router } from 'express';
 })
 export class MyAppointmentsComponent implements OnInit {
   private appointmentService = inject(AppointmentService);
+  private datePipe = inject(DatePipe);
   private authService = inject(AuthService);
+  private analytics = inject(Analytics, { optional: true });
 
   // Separamos las citas en dos listas distintas
   pendingAppointments: Appointment[] = [];
@@ -60,6 +62,11 @@ export class MyAppointmentsComponent implements OnInit {
 
     try {
       await this.appointmentService.cancelAppointment(appointmentId);
+      
+      // Registrar evento en Google Analytics
+      if (this.analytics) {
+        logEvent(this.analytics, 'booking_cancelled', { appointmentId });
+      }
       
       // La eliminamos de la lista al instante para que "desaparezca" de la pantalla
       this.pendingAppointments = this.pendingAppointments.filter(a => a.id !== appointmentId);

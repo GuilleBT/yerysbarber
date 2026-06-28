@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { AppointmentService, Appointment } from '../../shared/services/appointment.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { Router } from '@angular/router';
+import { Analytics, logEvent } from '@angular/fire/analytics';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -20,9 +21,10 @@ import Swal from 'sweetalert2';
 })
 export class HomeComponent implements OnInit {
   private appointmentService = inject(AppointmentService);
-  public authService = inject(AuthService);
   private datePipe = inject(DatePipe);
+  private authService = inject(AuthService);
   private router = inject(Router);
+  private analytics = inject(Analytics, { optional: true });
 
   minDate: Date = new Date(); 
   maxDate: Date = new Date(); 
@@ -36,6 +38,7 @@ export class HomeComponent implements OnInit {
   blockedDates: string[] = []; 
   weeklySchedule: any = {}; 
   blockedSlotsAdmin: any = {}; 
+  customDays: any = {}; // NUEVO: Horarios específicos por fecha
 
   isCalendarReady: boolean = false;
   isSaving: boolean = false;
@@ -62,6 +65,7 @@ export class HomeComponent implements OnInit {
       this.blockedDates = settings.blockedDates || [];
       this.weeklySchedule = settings.weeklySchedule || {};
       this.blockedSlotsAdmin = settings.blockedSlots || {};
+      this.customDays = settings.customDays || {}; // Cargamos los horarios específicos
     }
 
     this.isCalendarReady = true;
@@ -102,6 +106,12 @@ export class HomeComponent implements OnInit {
     
     if (this.blockedDates.includes(dateString)) return false;
 
+    // Si hay un horario específico para este día, comprobamos si tiene horas abiertas
+    if (this.customDays && this.customDays[dateString] !== undefined) {
+      const customSlots = this.customDays[dateString];
+      return customSlots && customSlots.trim() !== '';
+    }
+
     const dayOfWeek = d.getDay();
     const dailySlots = this.weeklySchedule[dayOfWeek];
     if (!dailySlots || dailySlots.trim() === '') return false;
@@ -120,8 +130,15 @@ export class HomeComponent implements OnInit {
     if (date) {
       const formattedDate = this.datePipe.transform(date, 'yyyy-MM-dd') || '';
       
-      const dayOfWeek = date.getDay(); 
-      const slotsStr = this.weeklySchedule[dayOfWeek] || '';
+      let slotsStr = '';
+      // Si hay un horario específico de fecha, lo usamos; si no, el semanal
+      if (this.customDays && this.customDays[formattedDate] !== undefined) {
+        slotsStr = this.customDays[formattedDate] || '';
+      } else {
+        const dayOfWeek = date.getDay(); 
+        slotsStr = this.weeklySchedule[dayOfWeek] || '';
+      }
+      
       this.availableSlots = slotsStr.split(',').map((s: string) => s.trim()).filter((s: string) => s);
 
       const firebaseOccupied = await this.appointmentService.getOccupiedSlots(formattedDate);
@@ -224,6 +241,14 @@ export class HomeComponent implements OnInit {
 
     try {
       await this.appointmentService.createAppointment(newAppointment);
+      
+      // Registrar evento en Google Analytics
+      if (this.analytics) {
+        logEvent(this.analytics, 'booking_completed', {
+          date: formattedDate,
+          time: this.selectedSlot
+        });
+      }
       
       this.isSaving = false;
 

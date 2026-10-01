@@ -1,12 +1,18 @@
 <mat-toolbar class="navbar">
   <div class="brand" [routerLink]="isAdmin ? '/admin' : '/'" style="cursor: pointer;">
-    <img src="assets/logo.png" alt="YerysBarber Logo" class="brand-logo">
+    <img src="assets/nuevoLogoYeray.webp" alt="YerysBarber Logo" class="brand-logo">
     <span class="brand-title">YerysBarber</span>
   </div>
 
   <span class="spacer"></span>
 
   <div class="user-zone">
+    @if (!isAdmin) {
+      <button mat-icon-button class="policy-nav-btn" (click)="openPolicyModal()" title="Normas de Citas">
+        <mat-icon>policy</mat-icon>
+      </button>
+    }
+
     @if (authService.user$ | async; as user) {
       
       @if (user.email === authService.ADMIN_EMAIL) {
@@ -44,3 +50,6 @@
 <div class="main-content">
   <router-outlet></router-outlet>
 </div>
+
+<!-- Modal Global de Normas y Condiciones de Citas -->
+<app-policy-modal></app-policy-modal>

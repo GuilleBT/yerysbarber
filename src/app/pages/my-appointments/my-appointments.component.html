@@ -1,13 +1,39 @@
 <div class="appointments-container">
   <h2 class="page-title">Mi Historial</h2>
 
+  <!-- Tarjeta Explicativa de Estados y Regla de 10 min -->
+  <div class="legend-card">
+    <div class="legend-header">
+      <mat-icon class="legend-icon">info</mat-icon>
+      <span class="legend-title">Guía rápida de citas</span>
+      <button type="button" class="btn-legend-link" (click)="openPolicyModal()" title="Ver todas las normas">
+        Normas de reserva
+      </button>
+    </div>
+    
+    <div class="legend-badges">
+      <div class="badge-item pending-pill">
+        <span class="dot"></span>
+        <span><strong>Pendiente:</strong> En revisión. No acudas aún.</span>
+      </div>
+      <div class="badge-item confirmed-pill">
+        <span class="dot"></span>
+        <span><strong>Aceptada:</strong> Confirmada. ¡Te esperamos!</span>
+      </div>
+    </div>
+
+    <p class="legend-punctuality">
+      ⏱️ <strong>Puntualidad:</strong> Si llegas más de 10 min tarde, se cancela la cita y pierdes el derecho a corte.
+    </p>
+  </div>
+
   @if (isLoading) {
     <div class="loading-state">
       <mat-spinner diameter="40"></mat-spinner>
       <p>Cargando tus citas...</p>
     </div>
   } 
-  @else if (pendingAppointments.length === 0 && completedAppointments.length === 0) {
+  @else if (pendingAppointments.length === 0 && completedAppointments.length === 0 && cancelledAppointments.length === 0) {
     <div class="empty-state">
       <mat-icon class="empty-icon">event_busy</mat-icon>
       <p>Aún no tienes ninguna cita registrada.</p>
@@ -22,7 +48,7 @@
       <h3 class="section-title">Próximas citas</h3>
       <div class="appointment-list">
         @for (appt of pendingAppointments; track appt.id) {
-          <mat-card class="appointment-card">
+          <mat-card class="appointment-card" [class.is-pending]="appt.status === 'pending'">
             <mat-card-content>
               <div class="appt-header">
                 <span class="appt-date">{{ appt.date | date:'longDate' }}</span>
@@ -48,10 +74,66 @@
                 </div>
               </div>
 
-              <mat-divider style="margin-top: 16px; margin-bottom: 8px;"></mat-divider>
+              <!-- Mensaje Explicativo de Estado según corresponda -->
+              <div class="appt-status-alert" [ngClass]="appt.status === 'pending' ? 'alert-pending' : 'alert-confirmed'">
+                <mat-icon class="alert-icon">{{ appt.status === 'pending' ? 'hourglass_top' : 'check_circle' }}</mat-icon>
+                <div class="alert-content">
+                  @if (appt.status === 'pending') {
+                    <strong class="alert-title">Pendiente de aprobación</strong>
+                    <p class="alert-desc">Yeray debe confirmar tu turno. <strong>No acudas a la barbería</strong> mientras esté en este estado.</p>
+                  } @else {
+                    <strong class="alert-title">¡Cita confirmada!</strong>
+                    <p class="alert-desc">Tu turno está asegurado. Por favor, sé puntual (máximo 10 min de cortesía).</p>
+                  }
+                </div>
+              </div>
+
+              <mat-divider style="margin-top: 14px; margin-bottom: 8px;"></mat-divider>
               <div style="display: flex; justify-content: flex-end;">
                 <button mat-button color="warn" (click)="cancelAppointment(appt.id)">
                   <mat-icon>cancel</mat-icon> Anular cita
+                </button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    }
+
+    @if (cancelledAppointments.length > 0) {
+      <h3 class="section-title text-muted" style="margin-top: 36px;">Citas no aceptadas o canceladas</h3>
+      <div class="appointment-list">
+        @for (appt of cancelledAppointments; track appt.id) {
+          <mat-card class="appointment-card cancelled-card">
+            <mat-card-content>
+              <div class="appt-header">
+                <span class="appt-date">{{ appt.date | date:'longDate' }}</span>
+                <span class="appt-status cancelled">Rechazada</span>
+              </div>
+              <mat-divider></mat-divider>
+
+              <div class="appt-body">
+                <div class="appt-detail">
+                  <mat-icon>schedule</mat-icon>
+                  <span>{{ appt.time }} - {{ getEndTime(appt.time) }} h</span>
+                </div>
+                <div class="appt-detail">
+                  <mat-icon>content_cut</mat-icon>
+                  <span>YerysBarber</span>
+                </div>
+              </div>
+
+              <div class="appt-status-alert alert-cancelled">
+                <mat-icon class="alert-icon">cancel</mat-icon>
+                <div class="alert-content">
+                  <strong class="alert-title">Cita rechazada o anulada</strong>
+                  <p class="alert-desc">Esta cita no se pudo llevar a cabo. Puedes pedir otro hueco disponible en el calendario.</p>
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                <button mat-button class="btn-rebook" routerLink="/reservar">
+                  <mat-icon>event</mat-icon> Pedir otro día
                 </button>
               </div>
             </mat-card-content>

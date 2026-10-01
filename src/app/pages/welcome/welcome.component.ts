@@ -66,15 +66,43 @@ export class WelcomeComponent implements OnInit {
     });
   }
 
+  reviewFilter: 'all' | 'with-comment' = 'all';
+
+  hasComment(review: Review): boolean {
+    if (!review.comment) return false;
+    const trimmed = review.comment.trim();
+    return trimmed.length > 0 && trimmed !== 'Sin comentarios, solo valoración de estrellas.';
+  }
+
+  get filteredReviews(): Review[] {
+    if (this.reviewFilter === 'with-comment') {
+      return this.reviews.filter(r => this.hasComment(r));
+    }
+    return this.reviews;
+  }
+
+  get reviewsWithCommentCount(): number {
+    return this.reviews.filter(r => this.hasComment(r)).length;
+  }
+
   async loadReviews() {
-    this.reviews = await this.reviewService.getReviews();
-    this.totalReviews = this.reviews.length;
+    const rawReviews = await this.reviewService.getReviews();
+    this.totalReviews = rawReviews.length;
     if (this.totalReviews > 0) {
-      const sum = this.reviews.reduce((acc, r) => acc + r.rating, 0);
+      const sum = rawReviews.reduce((acc, r) => acc + r.rating, 0);
       this.averageRating = parseFloat((sum / this.totalReviews).toFixed(1));
     } else {
       this.averageRating = 5.0;
     }
+
+    // Priorizamos: primero las reseñas con comentario real, luego las que son solo estrellas (ambas por fecha desc)
+    this.reviews = [...rawReviews].sort((a, b) => {
+      const aHas = this.hasComment(a);
+      const bHas = this.hasComment(b);
+      if (aHas && !bHas) return -1;
+      if (!aHas && bHas) return 1;
+      return (b.date || 0) - (a.date || 0);
+    });
   }
 
   async checkPendingReviews(userId: string) {

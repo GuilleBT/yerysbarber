@@ -1,0 +1,351 @@
+@use "sass:color";
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Montserrat:wght@400;500;600;700&display=swap');
+
+// Variables de Marca
+$gold:            #c5a059;
+$gold-light:      #dfbe7e;
+$gold-glow:       rgba(197, 160, 89, 0.25);
+$dark:            #1c1b18;
+$dark-soft:       #2a2925;
+$text-dark:       #111111;
+$text-soft:       #555555;
+$white:           #ffffff;
+$radius:          22px;
+
+// Colores de Estados
+$pending-color:   #b78103;
+$pending-bg:      rgba(183, 129, 3, 0.08);
+$pending-border:  rgba(183, 129, 3, 0.25);
+
+$success-color:   #2e7d32;
+$success-bg:      rgba(46, 125, 50, 0.08);
+$success-border:  rgba(46, 125, 50, 0.22);
+
+$danger-color:    #c62828;
+$danger-bg:       rgba(198, 40, 40, 0.07);
+$danger-border:   rgba(198, 40, 40, 0.2);
+
+$alert-color:     #c53929;
+$alert-bg:        rgba(197, 57, 41, 0.09);
+$alert-border:    rgba(197, 57, 41, 0.25);
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+}
+
+@keyframes cardPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.policy-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 18, 16, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.policy-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  background: #ffffff;
+  border-radius: $radius;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(197, 160, 89, 0.3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+  animation: cardPop 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.btn-close-modal {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(245, 243, 239, 0.85);
+  color: $dark;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.25s ease;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    background: $dark;
+    color: $white;
+    transform: rotate(90deg);
+  }
+}
+
+// ── Header ──────────────────────────────────────────────────────────────────
+.modal-header {
+  padding: 24px 24px 16px;
+  text-align: center;
+  background: linear-gradient(180deg, #fbf9f5 0%, #ffffff 100%);
+  border-bottom: 1px solid rgba(197, 160, 89, 0.15);
+
+  .badge-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba($gold, 0.12);
+    border: 1.5px solid rgba($gold, 0.35);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+
+    .header-icon {
+      color: $gold;
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: $dark;
+    margin: 0 0 6px;
+    letter-spacing: 0.3px;
+  }
+
+  .modal-subtitle {
+    font-size: 13px;
+    color: $text-soft;
+    margin: 0;
+    line-height: 1.45;
+  }
+}
+
+// ── Body ────────────────────────────────────────────────────────────────────
+.modal-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+
+  /* Barra de scroll bonita y delgada */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba($gold, 0.35);
+    border-radius: 10px;
+  }
+}
+
+.policy-card {
+  display: flex;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  box-sizing: border-box;
+  align-items: flex-start;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  }
+
+  .card-icon-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 68px;
+
+    .rule-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .card-text-col {
+    flex: 1;
+
+    .rule-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 0 0 4px;
+      color: $dark;
+    }
+
+    .rule-desc {
+      font-size: 12.5px;
+      color: $text-soft;
+      margin: 0;
+      line-height: 1.45;
+
+      strong {
+        color: $text-dark;
+      }
+    }
+  }
+
+  // Estilos específicos por tarjeta
+  &.status-pending-card {
+    background: $pending-bg;
+    border: 1px solid $pending-border;
+
+    .warning-icon {
+      color: $pending-color;
+    }
+  }
+
+  &.status-confirmed-card {
+    background: $success-bg;
+    border: 1px solid $success-border;
+
+    .success-icon {
+      color: $success-color;
+    }
+  }
+
+  &.status-cancelled-card {
+    background: $danger-bg;
+    border: 1px solid $danger-border;
+
+    .cancel-icon {
+      color: $danger-color;
+    }
+  }
+
+  &.punctuality-card {
+    background: $alert-bg;
+    border: 1.5px dashed $alert-border;
+
+    .timer-icon {
+      color: $alert-color;
+    }
+
+    .rule-title {
+      color: #9c2719;
+    }
+  }
+}
+
+// ── Badges / Pills ──────────────────────────────────────────────────────────
+.status-pill {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  text-align: center;
+  white-space: nowrap;
+
+  &.pending {
+    background: #fff8e1;
+    color: $pending-color;
+    border: 1px solid rgba($pending-color, 0.3);
+  }
+
+  &.confirmed {
+    background: #e8f5e9;
+    color: $success-color;
+    border: 1px solid rgba($success-color, 0.3);
+  }
+
+  &.cancelled {
+    background: #ffebee;
+    color: $danger-color;
+    border: 1px solid rgba($danger-color, 0.3);
+  }
+
+  &.alert-pill {
+    background: #fbe9e7;
+    color: $alert-color;
+    border: 1px solid rgba($alert-color, 0.3);
+  }
+}
+
+// ── Footer ──────────────────────────────────────────────────────────────────
+.modal-footer {
+  padding: 16px 20px 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: #faf8f5;
+  display: flex;
+  justify-content: center;
+
+  .btn-accept-gold {
+    width: 100%;
+    max-width: 360px;
+    background: $dark !important;
+    color: $white !important;
+    border: 1.5px solid $gold !important;
+    border-radius: 40px !important;
+    height: 46px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12), 0 0 15px rgba($gold, 0.25) !important;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+
+    mat-icon {
+      color: $gold;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    &:hover {
+      background: #000000 !important;
+      border-color: $gold-light !important;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 0 20px rgba($gold, 0.4) !important;
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}

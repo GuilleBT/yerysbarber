@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon'; 
 import { AppointmentService, Appointment } from '../../shared/services/appointment.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { PolicyService } from '../../shared/services/policy.service';
 import { Router } from '@angular/router';
 import { Analytics, logEvent } from '@angular/fire/analytics';
 import Swal from 'sweetalert2';
@@ -23,6 +24,7 @@ export class HomeComponent implements OnInit {
   private appointmentService = inject(AppointmentService);
   private datePipe = inject(DatePipe);
   private authService = inject(AuthService);
+  public policyService = inject(PolicyService);
   private router = inject(Router);
   private analytics = inject(Analytics, { optional: true });
 
@@ -184,6 +186,10 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  openPolicyModal() {
+    this.policyService.open(false);
+  }
+
   async confirmAppointment() { 
     if (!this.selectedDate || !this.selectedSlot || this.selectedSlot.trim() === '') {
       Swal.fire({
@@ -209,6 +215,15 @@ export class HomeComponent implements OnInit {
         this.router.navigate(['/perfil']); 
       });
       return; 
+    }
+
+    // Comprobamos si el cliente ya ha aceptado las normas de servicio
+    if (!this.policyService.hasAccepted()) {
+      this.policyService.open(true, () => {
+        // En cuanto las acepta, se reanuda la confirmación automáticamente
+        this.confirmAppointment();
+      });
+      return;
     }
 
     this.isSaving = true;
@@ -256,14 +271,25 @@ export class HomeComponent implements OnInit {
         title: 'Reserva Registrada',
         html: `
           <div style="text-align: center; margin-top: 10px;">
-            <p style="color: #666; font-size: 16px; margin-bottom: 5px;">Tu solicitud para el <strong>${this.datePipe.transform(this.selectedDate, 'dd/MM/yyyy')}</strong> a las <strong>${this.selectedSlot}</strong> ha sido enviada.</p>
-            <hr style="border: 1px solid rgba(212, 175, 55, 0.2); margin: 15px 0;">
-            <p style="font-size: 14px; margin: 5px 0;">Yeray revisará y confirmará tu cita en breve.</p>
+            <p style="color: #444; font-size: 15px; margin-bottom: 8px;">
+              Tu solicitud para el <strong>${this.datePipe.transform(this.selectedDate, 'dd/MM/yyyy')}</strong> a las <strong>${this.selectedSlot}</strong> ha sido enviada.
+            </p>
+            <div style="background: #fff8e1; border: 1.5px solid #ffe082; border-radius: 14px; padding: 14px 16px; margin: 12px 0 6px; text-align: left;">
+              <p style="color: #b78103; font-weight: 700; font-size: 13.5px; margin: 0 0 5px;">
+                ⏳ ESTADO: PENDIENTE DE REVISIÓN
+              </p>
+              <p style="color: #555; font-size: 12.5px; margin: 0 0 8px; line-height: 1.45;">
+                <strong>NO acudas al local todavía</strong>. Revisa en tu pestaña <strong>"Mis Citas"</strong> hasta que cambie a <strong>Aceptada</strong>.
+              </p>
+              <p style="color: #c53929; font-size: 12px; font-weight: 600; margin: 0;">
+                ⏱️ Recuerda: tolerancia máxima de 10 min de cortesía.
+              </p>
+            </div>
           </div>
         `,
         icon: 'success',
         iconColor: '#D4AF37',
-        confirmButtonText: 'Aceptar',
+        confirmButtonText: 'Entendido',
         confirmButtonColor: '#1a1a1a',
         background: '#ffffff',
         backdrop: `rgba(0,0,0,0.6)`,

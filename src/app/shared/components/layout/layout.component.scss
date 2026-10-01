@@ -249,9 +249,10 @@ $shadow-gold:        0 4px 15px rgba($primary-gold, 0.15);
   }
 }
 
-/* Profile button & Logout button (Rediseño de Controles de Cristal) */
+/* Profile button & Logout button & Policy button (Rediseño de Controles de Cristal) */
 .profile-btn,
-.logout-btn {
+.logout-btn,
+.policy-nav-btn {
   color: $text-soft;
   background: rgba($white, 0.4);
   border: 1px solid rgba($primary-gold, 0.12);
@@ -296,6 +297,12 @@ $shadow-gold:        0 4px 15px rgba($primary-gold, 0.15);
         color: $primary-gold;
       }
     }
+  }
+}
+
+.policy-nav-btn {
+  &:hover mat-icon {
+    transform: scale(1.15);
   }
 }
 

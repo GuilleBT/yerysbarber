@@ -28,6 +28,24 @@
         </h3>
       </div>
 
+      <!-- Aviso informativo de estados y puntualidad -->
+      <div class="policy-reminder-card">
+        <div class="reminder-icon-box">
+          <mat-icon>info</mat-icon>
+        </div>
+        <div class="reminder-text-box">
+          <p class="reminder-main">
+            Tu cita quedará en estado <strong>Pendiente</strong>. No acudas hasta verla como <strong>Aceptada</strong>.
+          </p>
+          <div class="reminder-sub">
+            <span>⏱️ Máx. 10 min de cortesía</span>
+            <button type="button" class="policy-link-btn" (click)="openPolicyModal()">
+              Ver normas completas
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="slots-grid">
         @for (slot of availableSlots; track slot) {
           <button 

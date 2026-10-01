@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { filter } from 'rxjs/operators';
 import Swal from 'sweetalert2';
+import { PolicyService } from './shared/services/policy.service';
 
 @Component({
   selector: 'app-root',
@@ -13,6 +14,7 @@ import Swal from 'sweetalert2';
 export class AppComponent implements OnInit {
   // Inyectamos el servicio que vigila el Service Worker
   private swUpdate = inject(SwUpdate);
+  private policyService = inject(PolicyService);
 
   ngOnInit() {
     this.verificarActualizaciones();
@@ -28,6 +30,9 @@ export class AppComponent implements OnInit {
           filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY')
         )
         .subscribe(() => {
+          // Marcamos que la alerta de actualización está activa para pausar cualquier otro modal
+          this.policyService.setUpdatePromptActive(true);
+
           // Lanzamos el aviso elegante con SweetAlert2
           Swal.fire({
             title: '¡Mejoras disponibles!',
@@ -47,6 +52,9 @@ export class AppComponent implements OnInit {
             if (result.isConfirmed) {
               // Forzamos la recarga: limpia la caché vieja y carga el nuevo ID de Telegram
               window.location.reload();
+            } else {
+              // Si el usuario elige "Más tarde", liberamos el bloqueo para que la app funcione con normalidad
+              this.policyService.setUpdatePromptActive(false);
             }
           });
         });

@@ -3,7 +3,7 @@
   <!-- Hero Section (Estilo de la página principal) -->
   <div class="hero-section">
     <div class="branding">
-      <img src="assets/logo.png" alt="YerysBarber Logo" class="brand-logo">
+      <img src="assets/nuevoLogoYeray.webp" alt="YerysBarber Logo" class="brand-logo">
       <h1>YerysBarber</h1>
       <div class="brand-divider">
         <span class="line"></span>
@@ -58,9 +58,15 @@
         
         <!-- Peticiones por revisar (Nuevas citas pendientes) -->
         @if (pendingRequests.length > 0) {
-          <h2 class="section-title text-gold" style="margin-bottom: 20px;">
-            <mat-icon class="pulse-icon">notifications_active</mat-icon> Peticiones por revisar ({{ pendingRequests.length }})
-          </h2>
+          <div class="pending-header-row">
+            <h2 class="section-title text-gold">
+              <mat-icon class="pulse-icon">notifications_active</mat-icon> Peticiones por revisar ({{ pendingRequests.length }})
+            </h2>
+            <button mat-flat-button class="btn-accept-all" (click)="confirmAllPending()" [disabled]="isProcessingBatch">
+              <mat-icon>{{ isProcessingBatch ? 'hourglass_empty' : 'done_all' }}</mat-icon>
+              <span>{{ isProcessingBatch ? 'Aceptando...' : 'Aceptar todas (' + pendingRequests.length + ')' }}</span>
+            </button>
+          </div>
           <div class="pending-list" style="margin-bottom: 30px;">
             @for (appt of pendingRequests; track appt.id) {
               <mat-card class="agenda-card pending-card">
@@ -107,7 +113,15 @@
           </div>
 
           <div class="agenda-section">
-            <h2 class="section-title text-gold">Agenda: {{ selectedDate | date:'longDate' }}</h2>
+            <div class="agenda-header-row">
+              <h2 class="section-title text-gold">Agenda: {{ selectedDate | date:'longDate' }}</h2>
+              @if (pendingToCompleteDailyCount > 0) {
+                <button mat-flat-button class="btn-complete-all" (click)="completeAllDaily()" [disabled]="isProcessingBatch">
+                  <mat-icon>{{ isProcessingBatch ? 'hourglass_empty' : 'done_all' }}</mat-icon>
+                  <span>{{ isProcessingBatch ? 'Completando...' : 'Terminar todos (' + pendingToCompleteDailyCount + ')' }}</span>
+                </button>
+              }
+            </div>
 
             @if (dailyAppointments.length === 0) {
               <div class="empty-state">
@@ -448,10 +462,31 @@
       </div>
     </div>
 
+    <!-- Filtros de Opiniones en Admin -->
+    @if (totalReviews > 0) {
+      <div class="review-filters">
+        <button 
+          type="button" 
+          class="filter-pill" 
+          [class.active]="reviewFilter === 'all'" 
+          (click)="reviewFilter = 'all'">
+          Todas ({{ totalReviews }})
+        </button>
+        <button 
+          type="button" 
+          class="filter-pill" 
+          [class.active]="reviewFilter === 'with-comment'" 
+          (click)="reviewFilter = 'with-comment'">
+          <mat-icon class="pill-icon">chat_bubble_outline</mat-icon>
+          Con comentario ({{ reviewsWithCommentCount }})
+        </button>
+      </div>
+    }
+
     <!-- Lista de opiniones recibidas -->
     <div class="reviews-list">
-      @for (review of reviews; track review.id) {
-        <div class="review-card">
+      @for (review of filteredReviews; track review.id) {
+        <div class="review-card" [class.only-rating]="!hasComment(review)">
           <div class="review-header">
             <div class="reviewer-avatar">
               {{ (review.clientName || 'U').charAt(0).toUpperCase() }}
@@ -475,12 +510,16 @@
               <mat-icon>delete</mat-icon>
             </button>
           </div>
-          <p class="review-comment">"{{ review.comment || 'Sin comentarios, solo valoración de estrellas.' }}"</p>
+
+          @if (hasComment(review)) {
+            <p class="review-comment">"{{ review.comment }}"</p>
+          }
+
           <span class="review-date">{{ review.date | date:'dd/MM/yyyy' }}</span>
         </div>
       } @empty {
         <div style="text-align: center; padding: 40px; color: #666; font-style: italic;">
-          No hay valoraciones disponibles todavía.
+          No hay valoraciones con este filtro.
         </div>
       }
     </div>

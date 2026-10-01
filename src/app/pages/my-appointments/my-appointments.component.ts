@@ -7,6 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { AppointmentService, Appointment } from '../../shared/services/appointment.service';
 import { AuthService } from '../../shared/services/auth.service';
+import { PolicyService } from '../../shared/services/policy.service';
 import { RouterModule } from '@angular/router';
 import { Analytics, logEvent } from '@angular/fire/analytics';
 
@@ -30,11 +31,13 @@ export class MyAppointmentsComponent implements OnInit {
   private appointmentService = inject(AppointmentService);
   private datePipe = inject(DatePipe);
   private authService = inject(AuthService);
+  public policyService = inject(PolicyService);
   private analytics = inject(Analytics, { optional: true });
 
-  // Separamos las citas en dos listas distintas
+  // Separamos las citas en listas según su estado
   pendingAppointments: Appointment[] = [];
   completedAppointments: Appointment[] = [];
+  cancelledAppointments: Appointment[] = [];
   isLoading: boolean = true;
 
   async ngOnInit() {
@@ -42,16 +45,23 @@ export class MyAppointmentsComponent implements OnInit {
     if (user) {
       const allAppointments = await this.appointmentService.getUserAppointments(user.uid);
       
-      // 1. Ocultamos las canceladas
-    const activeAppointments = allAppointments.filter(a => a.status !== 'cancelled');
+      // 1. PRÓXIMAS CITAS: Pendientes de revisión y confirmadas
+      this.pendingAppointments = allAppointments.filter(a => a.status === 'pending' || a.status === 'confirmed');
 
-    // 2. PRÓXIMAS CITAS: Metemos las pendientes Y las que Yeray ya ha confirmado
-    this.pendingAppointments = activeAppointments.filter(a => a.status === 'pending' || a.status === 'confirmed');
+      // 2. HISTORIAL: Marcadas como terminadas tras el corte
+      this.completedAppointments = allAppointments.filter(a => a.status === 'completed');
 
-    // 3. HISTORIAL: Solo las que Yeray ha marcado como terminadas tras el corte
-    this.completedAppointments = activeAppointments.filter(a => a.status === 'completed');
+      // 3. RECHAZADAS / CANCELADAS: Para que el cliente sepa qué ocurrió (últimas 5)
+      this.cancelledAppointments = allAppointments
+        .filter(a => a.status === 'cancelled')
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+        .slice(0, 5);
     }
     this.isLoading = false;
+  }
+
+  openPolicyModal() {
+    this.policyService.open(false);
   }
 
   async cancelAppointment(appointmentId: string | undefined) {

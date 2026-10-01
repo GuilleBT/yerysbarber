@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Firestore, collection, addDoc, query, where, getDocs, doc, updateDoc, getDoc, setDoc } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, query, where, getDocs, doc, updateDoc, getDoc, setDoc, writeBatch } from '@angular/fire/firestore';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
@@ -173,6 +173,36 @@ export class AppointmentService {
       await updateDoc(docRef, { status: newStatus });
     } catch (error) {
       console.error('Error al cambiar el estado:', error);
+      throw error;
+    }
+  }
+
+  async confirmMultipleAppointments(appointmentIds: string[]): Promise<void> {
+    if (!appointmentIds || appointmentIds.length === 0) return;
+    try {
+      const batch = writeBatch(this.firestore);
+      for (const id of appointmentIds) {
+        const docRef = doc(this.firestore, 'appointments', id);
+        batch.update(docRef, { status: 'confirmed' });
+      }
+      await batch.commit();
+    } catch (error) {
+      console.error('Error al confirmar citas en lote:', error);
+      throw error;
+    }
+  }
+
+  async completeMultipleAppointments(appointmentIds: string[]): Promise<void> {
+    if (!appointmentIds || appointmentIds.length === 0) return;
+    try {
+      const batch = writeBatch(this.firestore);
+      for (const id of appointmentIds) {
+        const docRef = doc(this.firestore, 'appointments', id);
+        batch.update(docRef, { status: 'completed' });
+      }
+      await batch.commit();
+    } catch (error) {
+      console.error('Error al terminar cortes en lote:', error);
       throw error;
     }
   }

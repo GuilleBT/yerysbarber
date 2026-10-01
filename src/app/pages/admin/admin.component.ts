@@ -49,6 +49,7 @@ export class AdminComponent implements OnInit {
   selectedDate: Date = new Date();
   dailyAppointments: Appointment[] = [];
   pendingRequests: Appointment[] = []; 
+  isProcessingBatch: boolean = false; 
 
   // Reviews
   reviews: Review[] = [];
@@ -231,6 +232,150 @@ export class AdminComponent implements OnInit {
     }
   }
 
+  async confirmAllPending() {
+    if (this.isProcessingBatch || this.pendingRequests.length === 0) return;
+
+    const total = this.pendingRequests.length;
+    const result = await Swal.fire({
+      title: '¿Aceptar todas las citas?',
+      html: `
+        <div style="text-align: center; margin-top: 8px;">
+          <p style="font-size: 15px; color: #444; margin-bottom: 8px;">
+            Vas a confirmar <strong>${total} ${total === 1 ? 'cita pendiente' : 'citas pendientes'}</strong> de golpe.
+          </p>
+          <p style="font-size: 13px; color: #777; margin: 0;">
+            Los clientes recibirán la confirmación de inmediato en su app.
+          </p>
+        </div>
+      `,
+      icon: 'question',
+      iconColor: '#2e7d32',
+      showCancelButton: true,
+      confirmButtonColor: '#2e7d32',
+      cancelButtonColor: '#1c1b18',
+      confirmButtonText: `Sí, aceptar todas (${total})`,
+      cancelButtonText: 'Cancelar',
+      background: '#ffffff',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+
+    this.isProcessingBatch = true;
+
+    try {
+      const validIds = this.pendingRequests
+        .map(a => a.id)
+        .filter((id): id is string => !!id);
+
+      await this.appointmentService.confirmMultipleAppointments(validIds);
+
+      // Si alguna cita pertenecía al día que Yeray tiene seleccionado en el calendario, la sumamos a la vista
+      const selectedDateString = this.datePipe.transform(this.selectedDate, 'yyyy-MM-dd');
+      for (const appt of this.pendingRequests) {
+        if (appt.date === selectedDateString) {
+          appt.status = 'confirmed';
+          this.dailyAppointments.push({ ...appt });
+        }
+      }
+      this.dailyAppointments.sort((a, b) => a.time.localeCompare(b.time));
+
+      // Limpiamos las solicitudes pendientes
+      this.pendingRequests = [];
+
+      Swal.fire({
+        title: '¡Citas Confirmadas!',
+        text: `Se han aceptado ${total} ${total === 1 ? 'cita' : 'citas'} con éxito.`,
+        icon: 'success',
+        confirmButtonColor: '#2e7d32',
+        timer: 2200
+      });
+    } catch (error) {
+      console.error('Error al confirmar citas en lote:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Hubo un problema al aceptar las citas en lote. Inténtalo de nuevo.',
+        icon: 'error',
+        confirmButtonColor: '#c5a059'
+      });
+    } finally {
+      this.isProcessingBatch = false;
+    }
+  }
+
+  get pendingToCompleteDailyCount(): number {
+    return this.dailyAppointments.filter(a => a.status === 'confirmed').length;
+  }
+
+  async completeAllDaily() {
+    const confirmedAppts = this.dailyAppointments.filter(a => a.status === 'confirmed');
+    if (this.isProcessingBatch || confirmedAppts.length === 0) return;
+
+    const total = confirmedAppts.length;
+    const result = await Swal.fire({
+      title: '¿Terminar todos los cortes?',
+      html: `
+        <div style="text-align: center; margin-top: 8px;">
+          <p style="font-size: 15px; color: #444; margin-bottom: 8px;">
+            Vas a marcar como completados <strong>${total} ${total === 1 ? 'corte confirmado' : 'cortes confirmados'}</strong> de este día.
+          </p>
+          <p style="font-size: 13px; color: #777; margin: 0;">
+            Los clientes recibirán la invitación para valorar el corte y se actualizarán tus estadísticas.
+          </p>
+        </div>
+      `,
+      icon: 'question',
+      iconColor: '#c5a059',
+      showCancelButton: true,
+      confirmButtonColor: '#c5a059',
+      cancelButtonColor: '#1c1b18',
+      confirmButtonText: `Sí, terminar todos (${total})`,
+      cancelButtonText: 'Cancelar',
+      background: '#ffffff',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+
+    this.isProcessingBatch = true;
+
+    try {
+      const validIds = confirmedAppts
+        .map(a => a.id)
+        .filter((id): id is string => !!id);
+
+      await this.appointmentService.completeMultipleAppointments(validIds);
+
+      // Actualizamos el estado local de las citas a completado
+      for (const appt of this.dailyAppointments) {
+        if (appt.status === 'confirmed') {
+          appt.status = 'completed';
+        }
+      }
+
+      this.totalCuts += total;
+      await this.cargarEstadisticas();
+
+      Swal.fire({
+        title: '¡Cortes Terminados!',
+        text: `Se han completado ${total} ${total === 1 ? 'corte' : 'cortes'} con éxito.`,
+        icon: 'success',
+        confirmButtonColor: '#c5a059',
+        timer: 2200
+      });
+    } catch (error) {
+      console.error('Error al terminar cortes en lote:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Hubo un problema al terminar los cortes en lote. Inténtalo de nuevo.',
+        icon: 'error',
+        confirmButtonColor: '#c5a059'
+      });
+    } finally {
+      this.isProcessingBatch = false;
+    }
+  }
+
   async cargarEstadisticas() {
     try {
       const citasRef = collection(this.firestore, 'appointments');
@@ -326,15 +471,43 @@ export class AdminComponent implements OnInit {
     }
   }
 
+  reviewFilter: 'all' | 'with-comment' = 'all';
+
+  hasComment(review: Review): boolean {
+    if (!review.comment) return false;
+    const trimmed = review.comment.trim();
+    return trimmed.length > 0 && trimmed !== 'Sin comentarios, solo valoración de estrellas.';
+  }
+
+  get filteredReviews(): Review[] {
+    if (this.reviewFilter === 'with-comment') {
+      return this.reviews.filter(r => this.hasComment(r));
+    }
+    return this.reviews;
+  }
+
+  get reviewsWithCommentCount(): number {
+    return this.reviews.filter(r => this.hasComment(r)).length;
+  }
+
   async loadReviews() {
-    this.reviews = await this.reviewService.getReviews();
-    this.totalReviews = this.reviews.length;
+    const rawReviews = await this.reviewService.getReviews();
+    this.totalReviews = rawReviews.length;
     if (this.totalReviews > 0) {
-      const sum = this.reviews.reduce((acc, r) => acc + r.rating, 0);
+      const sum = rawReviews.reduce((acc, r) => acc + r.rating, 0);
       this.averageRating = parseFloat((sum / this.totalReviews).toFixed(1));
     } else {
       this.averageRating = 5.0;
     }
+
+    // Priorizamos: primero las reseñas con comentario real, luego las que son solo estrellas (ambas por fecha desc)
+    this.reviews = [...rawReviews].sort((a, b) => {
+      const aHas = this.hasComment(a);
+      const bHas = this.hasComment(b);
+      if (aHas && !bHas) return -1;
+      if (!aHas && bHas) return 1;
+      return (b.date || 0) - (a.date || 0);
+    });
   }
 
   async deleteReview(reviewId: string) {

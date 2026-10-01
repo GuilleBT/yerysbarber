@@ -1,0 +1,98 @@
+@if (isOpen) {
+  <div class="policy-modal-overlay" (click)="onBackdropClick($event)">
+    <div class="policy-modal-card" role="dialog" aria-modal="true" aria-labelledby="policy-modal-title">
+      
+      <!-- Botón de cerrar (solo en modo informativo) -->
+      @if (!isMandatory) {
+        <button type="button" class="btn-close-modal" (click)="onClose()" title="Cerrar ventana">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+
+      <!-- Encabezado con Icono de Barbería -->
+      <div class="modal-header">
+        <div class="badge-icon-wrap">
+          <mat-icon class="header-icon">content_cut</mat-icon>
+        </div>
+        <h2 id="policy-modal-title" class="modal-title">Normas de Reserva y Citas</h2>
+        <p class="modal-subtitle">Por favor, lee cómo funciona el sistema de citas en YerysBarber para garantizar el mejor servicio.</p>
+      </div>
+
+      <!-- Cuerpo con las 4 Reglas Clave -->
+      <div class="modal-body">
+        
+        <!-- Regla 1: Estado Pendiente -->
+        <div class="policy-card status-pending-card">
+          <div class="card-icon-col">
+            <span class="status-pill pending">Pendiente</span>
+            <mat-icon class="rule-icon warning-icon">hourglass_top</mat-icon>
+          </div>
+          <div class="card-text-col">
+            <h3 class="rule-title">1. Cita en revisión (Pendiente)</h3>
+            <p class="rule-desc">
+              Al pedir tu cita, entra en estado de espera. <strong>NO acudas al local todavía</strong>. Yeray debe aceptarla primero para que tu turno quede confirmado.
+            </p>
+          </div>
+        </div>
+
+        <!-- Regla 2: Estado Aceptada -->
+        <div class="policy-card status-confirmed-card">
+          <div class="card-icon-col">
+            <span class="status-pill confirmed">Aceptada</span>
+            <mat-icon class="rule-icon success-icon">check_circle</mat-icon>
+          </div>
+          <div class="card-text-col">
+            <h3 class="rule-title">2. Cita confirmada (Aceptada)</h3>
+            <p class="rule-desc">
+              En cuanto Yeray apruebe tu turno, verás tu cita en verde como <strong>Aceptada</strong> en la pestaña "Mis Citas". <strong>Solo debes acudir a la barbería cuando esté aceptada</strong>.
+            </p>
+          </div>
+        </div>
+
+        <!-- Regla 3: Estado Rechazada / Cancelada -->
+        <div class="policy-card status-cancelled-card">
+          <div class="card-icon-col">
+            <span class="status-pill cancelled">Rechazada</span>
+            <mat-icon class="rule-icon cancel-icon">cancel</mat-icon>
+          </div>
+          <div class="card-text-col">
+            <h3 class="rule-title">3. Cita no aceptada o cancelada</h3>
+            <p class="rule-desc">
+              Si por motivos de agenda o imprevistos no es posible atenderte, la cita aparecerá como rechazada. Podrás elegir tranquilamente otro hueco disponible en el calendario.
+            </p>
+          </div>
+        </div>
+
+        <!-- Regla 4: Tolerancia Máxima de 10 Minutos -->
+        <div class="policy-card punctuality-card">
+          <div class="card-icon-col">
+            <span class="status-pill alert-pill">10 Minutos</span>
+            <mat-icon class="rule-icon timer-icon">alarm_off</mat-icon>
+          </div>
+          <div class="card-text-col">
+            <h3 class="rule-title">4. Puntualidad (Tolerancia máxima)</h3>
+            <p class="rule-desc">
+              Los turnos son de 30 minutos. <strong>Si llegas más de 10 minutos tarde, se cancela la cita y pierdes el derecho al corte</strong> por respeto a los clientes con turnos posteriores.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Pie con botón de Aceptación -->
+      <div class="modal-footer">
+        @if (isMandatory) {
+          <button mat-raised-button class="btn-accept-gold" (click)="onAccept()">
+            <mat-icon>verified</mat-icon>
+            <span>He leído y acepto las condiciones</span>
+          </button>
+        } @else {
+          <button mat-raised-button class="btn-accept-gold" (click)="onClose()">
+            <span>Entendido, cerrar</span>
+          </button>
+        }
+      </div>
+
+    </div>
+  </div>
+}

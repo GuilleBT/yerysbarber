@@ -101,37 +101,40 @@
     }
 
     @if (cancelledAppointments.length > 0) {
-      <h3 class="section-title text-muted" style="margin-top: 36px;">Citas no aceptadas o canceladas</h3>
+      <div class="cancelled-header-row">
+        <h3 class="section-title text-muted">Citas canceladas o rechazadas</h3>
+        <button type="button" class="btn-clear-all-cancelled" (click)="dismissAllCancelled()" title="Ocultar todas de la lista">
+          <mat-icon>delete_sweep</mat-icon>
+          <span>Limpiar todas</span>
+        </button>
+      </div>
+
       <div class="appointment-list">
         @for (appt of cancelledAppointments; track appt.id) {
-          <mat-card class="appointment-card cancelled-card">
+          <mat-card class="appointment-card cancelled-card compact-card">
             <mat-card-content>
               <div class="appt-header">
-                <span class="appt-date">{{ appt.date | date:'longDate' }}</span>
-                <span class="appt-status cancelled">Rechazada</span>
+                <div class="header-left">
+                  <span class="appt-date">{{ appt.date | date:'longDate' }}</span>
+                  <span class="appt-status cancelled">Rechazada</span>
+                </div>
+                <button type="button" class="btn-dismiss-card" (click)="dismissCancelledAppointment(appt.id, $event)" title="Quitar este aviso">
+                  <mat-icon>close</mat-icon>
+                </button>
               </div>
-              <mat-divider></mat-divider>
 
-              <div class="appt-body">
+              <div class="compact-cancelled-body">
                 <div class="appt-detail">
                   <mat-icon>schedule</mat-icon>
                   <span>{{ appt.time }} - {{ getEndTime(appt.time) }} h</span>
                 </div>
-                <div class="appt-detail">
-                  <mat-icon>content_cut</mat-icon>
-                  <span>YerysBarber</span>
-                </div>
+                <span class="compact-cancelled-reason">No se pudo aceptar o fue cancelada</span>
               </div>
 
-              <div class="appt-status-alert alert-cancelled">
-                <mat-icon class="alert-icon">cancel</mat-icon>
-                <div class="alert-content">
-                  <strong class="alert-title">Cita rechazada o anulada</strong>
-                  <p class="alert-desc">Esta cita no se pudo llevar a cabo. Puedes pedir otro hueco disponible en el calendario.</p>
-                </div>
-              </div>
-
-              <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+              <div class="compact-cancelled-footer">
+                <button mat-button class="btn-dismiss-text" (click)="dismissCancelledAppointment(appt.id, $event)">
+                  Ocultar
+                </button>
                 <button mat-button class="btn-rebook" routerLink="/reservar">
                   <mat-icon>event</mat-icon> Pedir otro día
                 </button>

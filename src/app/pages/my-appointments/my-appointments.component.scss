@@ -531,32 +531,178 @@ mat-card-content button[color="warn"] {
   }
 }
 
-// ── Tarjeta Cancelada / Rechazada ───────────────────────────────────────────
-.cancelled-card {
-  opacity: 0.88;
-  border-left: 4px solid #c62828 !important;
+// ── Tarjeta Cancelada / Rechazada (Rediseño Compacto y Descartable) ──────────
+.cancelled-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 36px;
+  margin-bottom: 12px;
 
-  &:hover {
-    opacity: 1;
+  .section-title {
+    margin: 0 !important;
+  }
+
+  .btn-clear-all-cancelled {
+    background: none;
+    border: none;
+    color: #888;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: #888;
+    }
+
+    &:hover {
+      color: #c62828;
+      background: rgba(198, 40, 40, 0.06);
+
+      mat-icon {
+        color: #c62828;
+      }
+    }
   }
 }
 
-.btn-rebook {
-  color: $gold !important;
-  font-family: 'Montserrat', sans-serif !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  border-color: rgba(197, 160, 89, 0.35) !important;
+.cancelled-card {
+  opacity: 0.9;
+  border-left: 4px solid #c62828 !important;
+  transition: all 0.3s ease;
 
-  mat-icon {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-    color: $gold;
+  &.compact-card {
+    padding: 4px 0 !important;
+
+    .appt-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .btn-dismiss-card {
+        background: none;
+        border: none;
+        color: #999;
+        cursor: pointer;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        transition: all 0.2s ease;
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.06);
+          color: #c62828;
+        }
+      }
+    }
+
+    .compact-cancelled-body {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 6px 10px;
+      background: rgba(198, 40, 40, 0.04);
+      border-radius: 8px;
+      margin-bottom: 10px;
+
+      .appt-detail {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #444;
+
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+          color: #c62828;
+        }
+      }
+
+      .compact-cancelled-reason {
+        font-size: 11.5px;
+        color: #888;
+        font-style: italic;
+      }
+    }
+
+    .compact-cancelled-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+
+      .btn-dismiss-text {
+        color: #888 !important;
+        font-family: 'Montserrat', sans-serif !important;
+        font-size: 11px !important;
+        font-weight: 500 !important;
+        padding: 0 8px !important;
+        height: 28px !important;
+        line-height: 28px !important;
+
+        &:hover {
+          color: #c62828 !important;
+          background: rgba(198, 40, 40, 0.05) !important;
+        }
+      }
+
+      .btn-rebook {
+        color: $gold !important;
+        font-family: 'Montserrat', sans-serif !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        height: 30px !important;
+        line-height: 30px !important;
+
+        mat-icon {
+          font-size: 15px;
+          width: 15px;
+          height: 15px;
+          margin-right: 4px;
+        }
+
+        &:hover {
+          background: rgba(197, 160, 89, 0.08) !important;
+        }
+      }
+    }
   }
 
   &:hover {
-    background: rgba(197, 160, 89, 0.08) !important;
-    border-color: $gold !important;
+    opacity: 1;
   }
 }

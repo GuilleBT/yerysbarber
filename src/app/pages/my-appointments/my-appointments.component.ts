@@ -51,13 +51,59 @@ export class MyAppointmentsComponent implements OnInit {
       // 2. HISTORIAL: Marcadas como terminadas tras el corte
       this.completedAppointments = allAppointments.filter(a => a.status === 'completed');
 
-      // 3. RECHAZADAS / CANCELADAS: Para que el cliente sepa qué ocurrió (últimas 5)
+      // 3. RECHAZADAS / CANCELADAS: Solo las que el usuario NO haya descartado
+      const dismissedIds = this.getDismissedCancelledIds();
       this.cancelledAppointments = allAppointments
-        .filter(a => a.status === 'cancelled')
+        .filter(a => a.status === 'cancelled' && a.id && !dismissedIds.includes(a.id))
         .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
         .slice(0, 5);
     }
     this.isLoading = false;
+  }
+
+  private getDismissedCancelledIds(): string[] {
+    try {
+      const data = localStorage.getItem('yerys_dismissed_cancelled_ids');
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private saveDismissedCancelledIds(ids: string[]) {
+    try {
+      localStorage.setItem('yerys_dismissed_cancelled_ids', JSON.stringify(ids));
+    } catch (e) {
+      console.warn('Error saving dismissed cancelled ids', e);
+    }
+  }
+
+  dismissCancelledAppointment(id: string | undefined, event?: Event) {
+    if (event) event.stopPropagation();
+    if (!id) return;
+    
+    // Ocultar al instante de la lista
+    this.cancelledAppointments = this.cancelledAppointments.filter(a => a.id !== id);
+    
+    // Guardar en localStorage
+    const dismissed = this.getDismissedCancelledIds();
+    if (!dismissed.includes(id)) {
+      dismissed.push(id);
+      this.saveDismissedCancelledIds(dismissed);
+    }
+  }
+
+  dismissAllCancelled() {
+    const idsToDismiss = this.cancelledAppointments.map(a => a.id).filter((id): id is string => !!id);
+    this.cancelledAppointments = [];
+    
+    const dismissed = this.getDismissedCancelledIds();
+    for (const id of idsToDismiss) {
+      if (!dismissed.includes(id)) {
+        dismissed.push(id);
+      }
+    }
+    this.saveDismissedCancelledIds(dismissed);
   }
 
   openPolicyModal() {
